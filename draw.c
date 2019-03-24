@@ -45,11 +45,8 @@ int main(int argc, char ** argv)
 
                     int size = 7;
 
-                    for (int i = 0; i<=size; i++){ // come up with algo to draw circle
-                        for (int j = 0; j<=size; j++){
-                            pixels[mouseY-i][mouseX+j] = 0;
-                            pixels[mouseY-i][mouseX-j] = 0;
-                            pixels[mouseY+i][mouseX-j] = 0;
+                    for (int i = -size/2; i<=size/2; i++){ // come up with algo to draw circle
+                        for (int j = -size/2; j<=size/2; j++){
                             pixels[mouseY+i][mouseX+j] = 0;
                         }
                     }
