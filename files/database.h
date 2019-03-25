@@ -1,0 +1,1 @@
+struct array_len getFiles(char * directory); // change to return array of strings
