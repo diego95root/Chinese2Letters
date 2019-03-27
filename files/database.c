@@ -37,7 +37,6 @@ enum
   };
 */
 
-int x = 0;
 /*
 
 Takes a filename of the format XXXX_XX.png where the first X's are
@@ -76,31 +75,17 @@ char ** splitFilename(char * name){
 
 /*
 
-Adds a value to a linked list
+Adds a value to a an array
 
 */
 
-void add(char * value, node_t * head){
+void addValue(char * value, char ** head, int len){
 
-    printf("Adding: %s\n", head->val);
-    x++;
-    if (strcmp(head->val, "") == 0){
-        head->val = value;
-        head->next = NULL;
-    }
-
-    else if (head->next == NULL){
-        node_t * element;
-        element = malloc(sizeof(node_t));
-        element->val = value;
-        head->next = NULL;
-
-        head->next = element;
-        return;
-    }
-
-    else {
-        add(value, head->next);
+    for (int i = 0; i<len; i++){
+        if (strcmp(head[i], "") == 0){
+            strcpy(head[i], value);
+            break;
+        }
     }
 }
 
@@ -120,34 +105,7 @@ char **  getStrokeFiles(int stroke, Database * files){
         return strokeFiles;
     }
 
-    struct strokes_group * group = &(files->groups[stroke]);
-    int count = group->count + 1; // one more because start at count - 1 and "" at the end 
-    
-    char ** strokeFiles;
-    strokeFiles = malloc(sizeof(char *) * count);
-    
-    if (DEBUG){
-        printf("[*] There are %d characters with %d strokes:\n", group->count, group->strokes);
-    }
-
-    node_t * initial = group->names;
-
-    for (int i = 0; i<count-1; i++){
-        
-        if (DEBUG){
-            printf("[*] -> %s\n", initial->val);
-        }
-        // allocate and copy each element
-        strokeFiles[i] = malloc(sizeof(char) * strlen(initial->val));
-        strcpy(strokeFiles[i], initial->val);
-        initial = initial->next;
-    };
-
-    // terminate with null string
-    strokeFiles[count-1] = malloc(sizeof(char));
-    strcpy(strokeFiles[count-1], "");
-    
-    return strokeFiles;
+    return files->groups[stroke].names;
 }
 
 /*
@@ -174,11 +132,10 @@ void printArray(char ** array){
     printf("\b\b]\n");
 }
 
-
 /*
 
 getFiles gets all filenames from a directory and based on the stroke
-number of the character stores them in a different linked list. Sort 
+number of the character stores them in a different array. Sort 
 of a python dictionary. It returns that structure.
 
 */
@@ -188,13 +145,27 @@ Database * getFiles(char * directory){
     DIR *dir;
     struct dirent *file;
     
-    int num_files = 0;
+    Database * array = malloc(sizeof(Database));
+
+    // array to store the number of characters with x strokes
+    int arr[MAX_STROKES+1] = {0};
+
+    int numFiles = 0;
 
     if ((dir = opendir(directory)) != NULL) {
         while ((file = readdir(dir)) != NULL) {
             if (file->d_type == DT_REG){ 
                 
-                num_files++;
+                char ** splitted = splitFilename(file->d_name);
+                int strokes = atoi(splitted[1]);
+
+                if (strokes > MAX_STROKES){
+                    continue;
+                }
+
+                arr[strokes]++;
+
+                numFiles++;
 
             }
         }
@@ -206,25 +177,29 @@ Database * getFiles(char * directory){
     }
 
     if (DEBUG){
-        printf("[*] Number of files: %d\n", num_files);
+        printf("[*] Number of files: %d\n", numFiles);
     }
+    array->length = numFiles;
 
-    Database * array = malloc(sizeof(Database));
-    array->length = num_files;
 
+    // allocate memory for each array and each string on it
     for (int i = 1; i <= MAX_STROKES; i++){
-        array->groups[i].strokes = i;
+        if (DEBUG){
+            printf("Value at %d: %d\n", i, arr[i]);
+        }
 
-        node_t * head = NULL;
-        head = malloc(sizeof(node_t));
-        head->val = "";
-        head->next = NULL;
-        
-        array->groups[i].count = 0;
-        array->groups[i].names = head;
+        strokesGroup * group = &array->groups[i];
 
+        group->names = malloc(sizeof(char *) * arr[i]);
+        group->strokes = i;
+        group->count = 0;
+        for (int x = 0; x<=arr[i]; x++){
+            group->names[x] = malloc(sizeof(char) * 15);
+            strcpy(group->names[x], "");
+        }
     }
 
+    
     dir = opendir(directory);
     while ((file = readdir(dir)) != NULL) {
         if (file->d_type == DT_REG){ 
@@ -245,21 +220,19 @@ Database * getFiles(char * directory){
                 continue;
             }
 
-            struct strokes_group * head = &array->groups[strokes];
+            strokesGroup * head = &array->groups[strokes];
+            int length = arr[strokes];
 
-            add(hex, head->names);
-            head->count += 1;
-
+            addValue(hex, head->names, length);
+            head->count++; 
         }
     }
     closedir(dir);
 
-    printf("Number of iterations: %d\n", x);
-
     return array;
 }
 
-int main(){
+int mainTest(){
 
     Database * files = getFiles("../chars/");
 
@@ -268,11 +241,13 @@ int main(){
         printf("[*] %d stroke(s): %d characters\n", files->groups[i].strokes, files->groups[i].count);
     }
 
-    int strokes = 15;
+    for (int strokes = 0; strokes < 16; strokes++){
 
-    char ** strokeFiles = getStrokeFiles(strokes, files);
+        char ** strokeFiles = getStrokeFiles(strokes, files);
 
-    printArray(strokeFiles);
+        printArray(strokeFiles);
+        printf("Count: %d\n", files->groups[strokes].count);
+    }
 
     return 1;
 }
