@@ -110,6 +110,12 @@ char **  getStrokeFiles(int stroke, Database * files){
     return files->groups[stroke].names;
 }
 
+/*
+
+Returns the number of characters that have a specified stroke number
+
+*/
+
 int getNumberByStroke(int stroke, Database * files){
     return files->groups[stroke].count;
 }
@@ -204,7 +210,6 @@ Database * getFiles(char * directory){
             strcpy(group->names[x], "");
         }
     }
-
     
     dir = opendir(directory);
     while ((file = readdir(dir)) != NULL) {
