@@ -1,4 +1,4 @@
-#define MAX_STROKES 16 // remove from here
+#define MAX_STROKES 15 // remove from here
 #define DEBUG 0
 
 typedef struct node {
@@ -12,13 +12,13 @@ struct strokes_group {
     node_t * names;
 };
 
-struct array_len {
+typedef struct database {
     struct strokes_group groups[MAX_STROKES];
     int length;
-};
+} Database;
 
-char ** split(char * name);
-struct array_len * getFiles(char * directory); // change to return array of strings
+char ** splitFilename(char * name);
+Database * getFiles(char * directory);
 void add(char * value, node_t * head);
-char ** getStrokeFiles(int stroke, struct array_len * files);
+char ** getStrokeFiles(int stroke, Database * files);
 void printArray(char ** array);
