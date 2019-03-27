@@ -79,6 +79,8 @@ Adds a value to a an array
 
 */
 
+
+
 void addValue(char * value, char ** head, int len){
 
     for (int i = 0; i<len; i++){
@@ -106,6 +108,10 @@ char **  getStrokeFiles(int stroke, Database * files){
     }
 
     return files->groups[stroke].names;
+}
+
+int getNumberByStroke(int stroke, Database * files){
+    return files->groups[stroke].count;
 }
 
 /*
@@ -212,9 +218,11 @@ Database * getFiles(char * directory){
                 printf("d_type: %d\n", file->d_type);
             }
 
+            char wholeName[20];
+            strcpy(wholeName, file->d_name);
+
             char ** splitted = splitFilename(file->d_name);
             int strokes = atoi(splitted[1]);
-            char * hex = splitted[0];
 
             if (strokes > MAX_STROKES){
                 continue;
@@ -223,7 +231,7 @@ Database * getFiles(char * directory){
             strokesGroup * head = &array->groups[strokes];
             int length = arr[strokes];
 
-            addValue(hex, head->names, length);
+            addValue(wholeName, head->names, length);
             head->count++; 
         }
     }

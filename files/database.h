@@ -19,3 +19,5 @@ Database * getFiles(char * directory);
 
 void addValue(char * value, char ** head, int len);
 void printArray(char ** array);
+
+int getNumberByStroke(int stroke, Database * files);
