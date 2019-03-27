@@ -41,7 +41,7 @@ void test_filenamesByStrokeNumber(){
     };
 }
 
-int main(void){
+int main(){
     UNITY_BEGIN();
     RUN_TEST(test_CountOfFilesWithNStrokes);
     RUN_TEST(test_filenamesByStrokeNumber);
