@@ -8,7 +8,7 @@ typedef struct strokesGroup {
 } strokesGroup;
 
 typedef struct database {
-    struct strokesGroup groups[MAX_STROKES];
+    strokesGroup groups[MAX_STROKES];
     int length;
 } Database;
 
@@ -19,5 +19,7 @@ Database * getFiles(char * directory);
 
 void addValue(char * value, char ** head, int len);
 void printArray(char ** array);
+void closeDB(Database * files);
+void clearStrokes(char ** strokeFiles);
 
 int getNumberByStroke(int stroke, Database * files);

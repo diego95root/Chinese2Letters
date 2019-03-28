@@ -7,6 +7,7 @@ void test_CountOfFilesWithNStrokes(){
     for (int i = 1; i < 16; i++){
         TEST_ASSERT_EQUAL_INT(arr[i-1], getNumberByStroke(i, files));
     }
+    closeDB(files);
 }
 
 void test_filenamesByStrokeNumber(){
@@ -29,7 +30,7 @@ void test_filenamesByStrokeNumber(){
 
     int len[] = {1, 9, 23, 34, 37, 50, 34, 35, 29, 16, 12, 10, 7, 1, 2};
 
-    for (int i = 0; i < 16; i++){
+    for (int i = 0; i < 15; i++){
 
         char ** strokeFiles = getStrokeFiles(i+1, files);
         
@@ -38,7 +39,10 @@ void test_filenamesByStrokeNumber(){
             TEST_ASSERT_EQUAL_STRING(filenames[i][x], strokeFiles[x]);
 
         }
-    };
+
+    }
+
+    closeDB(files);
 }
 
 int main(){

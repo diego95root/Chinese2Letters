@@ -57,7 +57,7 @@ char ** splitFilename(char * name){
 
     for (int i = 0; i < 2; i++){
                     
-        splitted[i] = malloc(sizeof(char) * strlen(ptr));
+        splitted[i] = malloc(sizeof(char) * strlen(ptr)+1);
 
         char zero = ptr[0]; 
         if (i == 1 && atoi(&zero) == 0){ // check if second number has leading zero
@@ -157,7 +157,7 @@ Database * getFiles(char * directory){
     DIR *dir;
     struct dirent *file;
     
-    Database * array = malloc(sizeof(Database));
+    Database * array = malloc(sizeof(Database)*2);
 
     // array to store the number of characters with x strokes
     int arr[MAX_STROKES+1] = {0};
@@ -170,6 +170,9 @@ Database * getFiles(char * directory){
                 
                 char ** splitted = splitFilename(file->d_name);
                 int strokes = atoi(splitted[1]);
+                free(splitted[0]);
+                free(splitted[1]);
+                free(splitted);
 
                 if (strokes > MAX_STROKES){
                     continue;
@@ -191,6 +194,7 @@ Database * getFiles(char * directory){
     if (DEBUG){
         printf("[*] Number of files: %d\n", numFiles);
     }
+
     array->length = numFiles;
 
 
@@ -202,7 +206,7 @@ Database * getFiles(char * directory){
 
         strokesGroup * group = &array->groups[i];
 
-        group->names = malloc(sizeof(char *) * arr[i]);
+        group->names = malloc(sizeof(char *) * arr[i] * 2);
         group->strokes = i;
         group->count = 0;
         for (int x = 0; x<=arr[i]; x++){
@@ -228,6 +232,9 @@ Database * getFiles(char * directory){
 
             char ** splitted = splitFilename(file->d_name);
             int strokes = atoi(splitted[1]);
+            free(splitted[0]);
+            free(splitted[1]);
+            free(splitted);
 
             if (strokes > MAX_STROKES){
                 continue;
@@ -245,6 +252,18 @@ Database * getFiles(char * directory){
     return array;
 }
 
+void closeDB(Database * files){
+    for (int i = 1; i <= MAX_STROKES; i++){
+        strokesGroup * group = &files->groups[i];
+        for (int x = 0; x <= group->count; x++){
+            free(group->names[x]);
+        }
+        free(group->names);
+    }
+    free(files);
+}
+
+
 int mainTest(){
 
     Database * files = getFiles("../chars/");
@@ -261,6 +280,8 @@ int mainTest(){
         printArray(strokeFiles);
         printf("Count: %d\n", files->groups[strokes].count);
     }
+
+    closeDB(files);
 
     return 1;
 }
