@@ -157,7 +157,7 @@ Database * getFiles(char * directory){
     DIR *dir;
     struct dirent *file;
     
-    Database * array = malloc(sizeof(Database)*2);
+    Database * array = malloc(sizeof(Database) + 8);
 
     // array to store the number of characters with x strokes
     int arr[MAX_STROKES+1] = {0};
@@ -206,7 +206,7 @@ Database * getFiles(char * directory){
 
         strokesGroup * group = &array->groups[i];
 
-        group->names = malloc(sizeof(char *) * arr[i] * 2);
+        group->names = malloc(sizeof(char *) * arr[i] + 8);
         group->strokes = i;
         group->count = 0;
         for (int x = 0; x<=arr[i]; x++){
