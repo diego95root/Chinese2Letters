@@ -146,13 +146,13 @@ void printArray(char ** array){
 
 /*
 
-getFiles gets all filenames from a directory and based on the stroke
+openDB gets all filenames from a directory and based on the stroke
 number of the character stores them in a different array. Sort 
 of a python dictionary. It returns that structure.
 
 */
 
-Database * getFiles(char * directory){
+Database * openDB(char * directory){
 
     DIR *dir;
     struct dirent *file;
@@ -264,16 +264,16 @@ void closeDB(Database * files){
 }
 
 
-int mainTest(){
+int main2(){
 
-    Database * files = getFiles("../chars/");
+    Database * files = openDB("../chars/");
 
     printf("[*] Total strokes: %d\n", files->length);
     for (int i = 1; i <= MAX_STROKES; i++){
         printf("[*] %d stroke(s): %d characters\n", files->groups[i].strokes, files->groups[i].count);
     }
 
-    for (int strokes = 0; strokes < 16; strokes++){
+    for (int strokes = 1; strokes < 16; strokes++){
 
         char ** strokeFiles = getStrokeFiles(strokes, files);
 

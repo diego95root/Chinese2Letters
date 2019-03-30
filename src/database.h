@@ -15,11 +15,10 @@ typedef struct database {
 char ** splitFilename(char * name);
 char ** getStrokeFiles(int stroke, Database * files);
 
-Database * getFiles(char * directory);
+Database * openDB(char * directory);
 
 void addValue(char * value, char ** head, int len);
 void printArray(char ** array);
 void closeDB(Database * files);
-void clearStrokes(char ** strokeFiles);
 
 int getNumberByStroke(int stroke, Database * files);

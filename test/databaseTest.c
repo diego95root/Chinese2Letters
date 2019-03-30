@@ -2,7 +2,7 @@
 #include "database.h"
 
 void test_CountOfFilesWithNStrokes(){
-    Database * files = getFiles("../chars/");
+    Database * files = openDB("../chars/");
     int arr[] = {1, 9, 23, 34, 37, 50, 34, 35, 29, 16, 12, 10, 7, 1, 2};
     for (int i = 1; i < 16; i++){
         TEST_ASSERT_EQUAL_INT(arr[i-1], getNumberByStroke(i, files));
@@ -11,7 +11,7 @@ void test_CountOfFilesWithNStrokes(){
 }
 
 void test_filenamesByStrokeNumber(){
-    Database * files = getFiles("../chars/");
+    Database * files = openDB("../chars/");
     char * filenames[][50] = {{"4e00_01.png"},
     {"4e86_02.png", "4e8c_02.png", "4eba_02.png", "513f_02.png", "5165_02.png", "51e0_02.png", "529b_02.png", "5341_02.png", "53c8_02.png"},
     {"4e09_03.png", "4e0a_03.png", "4e0b_03.png", "4e0e_03.png", "4e2a_03.png", "4e48_03.png", "4e49_03.png", "4e4b_03.png", "4e5f_03.png", "4e8e_03.png", "53ca_03.png", "53e3_03.png", "5927_03.png", "5973_03.png", "5b50_03.png", "5c0f_03.png", "5c71_03.png", "5de5_03.png", "5df1_03.png", "5df2_03.png", "624d_03.png", "95e8_03.png", "9a6c_03.png"},
