@@ -5,7 +5,7 @@ project(tests)
 
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "NoTest")
 
 include_directories(src)
 file(GLOB INCLUDES_SRC src/*.h)
@@ -24,3 +24,4 @@ else()
 endif()
 
 add_executable(tests ${SOURCES} ${TESTS} ${UNITY} ${INCLUDES_SRC} ${INCLUDES_UNI})
+target_link_libraries(tests png)
