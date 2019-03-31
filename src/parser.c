@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include <png.h>
+#include <string.h>
+#include "parser.h"
+#include "database.h"
 
 int ** image2matrix(char * name, int width, int height){
 
@@ -43,28 +46,80 @@ int ** image2matrix(char * name, int width, int height){
     return matrix;
 }
 
+void writeMatrix(int ** matrix, int width, int height){
+    FILE * out = fopen("data", "w");
+    
+    if (out == NULL){
+        printf("File 'out' couldn't be opened\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < height; i++){
+        for (int j = 0; j < width; j += 1){
+            fprintf(out, "%d ", matrix[i][j]);
+        }   
+        fprintf(out, "\n");
+    }
+
+    fclose(out);
+}
+
+charScore * orderCompare(char ** chars, char * compareTo, int count){
+    
+    charScore * scoreList = malloc(sizeof(charScore *) * (count * 2));
+    
+    for (int i = 0; i < count; i++){
+        if (strcmp(chars[i], "") == 0){
+            break;
+        }
+
+        charScore * element = &scoreList[i];
+
+        element->name = malloc(sizeof(char) * 15);
+        element->score = 1.5;
+
+        strcpy(scoreList[i].name, chars[i]);
+    }
+
+    return scoreList;
+}
+
+
 int main(){
 
     int width = 50;
     int height = 50;
 
-    char filename[] = "../chars/4e8b_08.png";
+    Database * files = openDB("../chars/");
+    
+    char filename[] = "../chars/5c55_10.png";
+
+    //maybe join them together to return a structu
+    char ** strokeFiles = getStrokeFiles(12, files);
+    int count = getNumberByStroke(12, files);
+    
+    charScore * sortedChars = orderCompare(strokeFiles, count);
+
+    for (int i = 0; i < count; i++){
+        printf("Name removed: %s (score %.2f)\n", sortedChars[i].name, sortedChars[i].score);
+        free(sortedChars[i].name);
+        //free(sortedChars[i]);
+    }
+    free(sortedChars);
+
+    /*
 
     int ** matrix = image2matrix(filename, width, height);
     
-    /*
-    for (int i = 0; i < height; i++){
-        for (int j = 0; j < width; j += 1){
-            printf("%d ", matrix[i][j]);
-        }   
-        printf("\n");
-    }
-    */
+    writeMatrix(matrix, width, height);
 
     for (int i = 0; i<width; i++){
         free(matrix[i]);
     }
     free(matrix);
-    
+    */
+
+    closeDB(files);
+
     return 1;
 }
