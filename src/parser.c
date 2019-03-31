@@ -84,8 +84,38 @@ charScore * orderCompare(char ** chars, char * compareTo, int count){
     return scoreList;
 }
 
+void sortList(charScore * list, int count){
+    int none;
+    do {
+        none = 0;
+        for (int x = 0; x < count-1; x++){
+            if (list[x].score > list[x+1].score){
+                charScore a = list[x+1];
+                list[x+1] = list[x];
+                list[x] = a;
+                none = 1;
+            }
+        }
+    } while (none != 0);
+}
 
-int main(){
+void sortListTest(double * list, int count){
+    int none;
+    do {
+        none = 0;
+        for (int x = 0; x < count-1; x++){
+            if (list[x] > list[x+1]){
+                double a = list[x+1];
+                list[x+1] = list[x];
+                list[x] = a;
+                none = 1;
+            }
+        }
+    } while (none != 0);
+}
+
+/*
+int main3(){
 
     int width = 50;
     int height = 50;
@@ -94,16 +124,18 @@ int main(){
     
     char filename[] = "../chars/5c55_10.png";
 
-    //maybe join them together to return a structu
+    //maybe join them together to return a struct
     char ** strokeFiles = getStrokeFiles(12, files);
     int count = getNumberByStroke(12, files);
     
-    charScore * sortedChars = orderCompare(strokeFiles, count);
+    charScore * valueChars = orderCompare(strokeFiles, filename, count);
+
+    charScore * sortedChars = sortList(valueChars, count);
+
 
     for (int i = 0; i < count; i++){
         printf("Name removed: %s (score %.2f)\n", sortedChars[i].name, sortedChars[i].score);
         free(sortedChars[i].name);
-        //free(sortedChars[i]);
     }
     free(sortedChars);
 
@@ -117,9 +149,10 @@ int main(){
         free(matrix[i]);
     }
     free(matrix);
-    */
+    
 
     closeDB(files);
 
     return 1;
 }
+*/
