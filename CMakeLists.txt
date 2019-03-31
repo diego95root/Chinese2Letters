@@ -5,7 +5,7 @@ project(tests)
 
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "NoTest")
 
 add_definitions(-DUNITY_INCLUDE_DOUBLE -DUNITY_DOUBLE_PRECISION=1e-12f)
 
@@ -26,4 +26,4 @@ else()
 endif()
 
 add_executable(tests ${SOURCES} ${TESTS} ${UNITY} ${INCLUDES_SRC} ${INCLUDES_UNI})
-target_link_libraries(tests png)
+target_link_libraries(tests png SDL2 SDL2main SDL2_image)
