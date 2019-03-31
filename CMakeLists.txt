@@ -5,7 +5,9 @@ project(tests)
 
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_BUILD_TYPE "NoTest")
+set(CMAKE_BUILD_TYPE "Debug")
+
+add_definitions(-DUNITY_INCLUDE_DOUBLE -DUNITY_DOUBLE_PRECISION=1e-12f)
 
 include_directories(src)
 file(GLOB INCLUDES_SRC src/*.h)
