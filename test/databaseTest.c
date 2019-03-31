@@ -1,5 +1,6 @@
 #include "unity.h"
 #include "database.h"
+#include "parser.h"
 
 void test_CountOfFilesWithNStrokes(){
     Database * files = openDB("../chars/");
@@ -45,9 +46,26 @@ void test_filenamesByStrokeNumber(){
     closeDB(files);
 }
 
+void test_ScoresSortedCorrectly(){
+    Database * files = openDB("../chars/");
+    double arr[][15] = {
+    {1, 9, 23, 34, 37, 50, 34, 35, 29, 16, 12, 10, 7, 1, 2},
+    {1, 1, 2, 7, 9, 10, 12, 16, 23, 29, 34, 34, 35, 37, 50},
+    {1.01, 9.872, 23.7, 34.2, 37.6, 50.1, 34.3, 35.444, 29.2, 16.1, 12.6, 10.89, 7.99, 1, 2},
+    {1, 1.01, 2, 7.99, 9.872, 10.89, 12.6, 16.1, 23.7, 29.2, 34.3, 34, 35.444, 37.6, 50.1},
+    {0.01, 0.872, 0.7, 0.2, 0.6, 0.134, 0.3, 0.444, 0.2, 0.1, 0.69, 0.89, 0.99, 0.1, 0.23},
+    {0.01, 0.1, 0.1, 0.134, 0.2, 0.2, 0.23, 0.3, 0.444, 0.6, 0.69, 0.7, 0.872, 0.89, 0.99}};
+    for (int i = 0; i < 2; i+=2){
+        sortListTest(arr[i], 15);
+        TEST_ASSERT_EQUAL_DOUBLE_ARRAY(arr[i+1], arr[i], 15);
+    }
+    closeDB(files);
+}
+
 int main(){
     UNITY_BEGIN();
     RUN_TEST(test_CountOfFilesWithNStrokes);
     RUN_TEST(test_filenamesByStrokeNumber);
+    RUN_TEST(test_ScoresSortedCorrectly);
     return UNITY_END();
 }
