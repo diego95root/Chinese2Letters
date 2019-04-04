@@ -76,7 +76,10 @@ void createDrawingPane(SDL_Renderer * renderer){
 
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
     int pixels[500][500];
+    
     memset(pixels, 255, 500 * 500 * sizeof(int));
+
+    printf("%d ej\n", pixels[0][0]);
 
     while (!quit){
 
@@ -200,6 +203,9 @@ void createDrawingPane(SDL_Renderer * renderer){
         free(pane1);
         free(pane2);
     }
+
+    writeMatrix(pixels, 500, 500);
+
     freeCharScoreList(valueChars);
     for (int i = 0; i < valueChars->count; i++){
         free(images[i]);
