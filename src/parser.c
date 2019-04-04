@@ -4,6 +4,39 @@
 #include "parser.h"
 #include "database.h"
 
+Database * files;
+int init = 0;
+
+charScoreList * parserInit(int stroke){
+    
+    if (init == 0){
+        files = openDB("../chars2/");
+        init = 1;
+    }
+    
+    char filename[] = "../chars/5c55_10.png";
+
+    char ** strokeFiles = getStrokeFiles(stroke, files);
+    int count = getNumberByStroke(stroke, files);
+
+    charScoreList * valueChars;
+
+    if (count == -1){
+        valueChars = orderCompare(strokeFiles, filename, 0);
+        free(strokeFiles[0]);
+        free(strokeFiles);
+    }
+    else {
+        valueChars = orderCompare(strokeFiles, filename, count);
+    }
+
+    return valueChars;
+}
+
+void parserEnd(){
+    closeDB(files);
+}
+
 int ** image2matrix(char * name, int width, int height){
 
     // allocate needed memory for the image
@@ -64,24 +97,48 @@ void writeMatrix(int ** matrix, int width, int height){
     fclose(out);
 }
 
-charScore * orderCompare(char ** chars, char * compareTo, int count){
+charScoreList * orderCompare(char ** chars, char * compareTo, int count){
     
-    charScore * scoreList = malloc(sizeof(charScore *) * (count * 2));
-    
+    charScoreList * scoreList = malloc(sizeof(charScoreList *) + 8);
+
+    scoreList->elements = malloc(sizeof(charScore *) * (count*2));
+
+    scoreList->count = count;
+
     for (int i = 0; i < count; i++){
+
         if (strcmp(chars[i], "") == 0){
             break;
         }
 
-        charScore * element = &scoreList[i];
+        charScore * element = malloc(sizeof(charScore *) + 8);
 
         element->name = malloc(sizeof(char) * 15);
         element->score = 1.5;
 
-        strcpy(scoreList[i].name, chars[i]);
+        strcpy(element->name, chars[i]);
+
+        scoreList->elements[i] = *element;
+
+        free(element);
+
     }
 
     return scoreList;
+}
+
+void freeCharScoreList(charScoreList * list){
+
+    for (int i = 0; i < list->count; i++){
+        
+        //printf("%s at %d\n", list->elements[i].name, i);
+        
+        free(list->elements[i].name);
+
+        //free(&list->elements[i]);
+    }
+    free(list->elements);
+    free(list);
 }
 
 void sortList(charScore * list, int count){
