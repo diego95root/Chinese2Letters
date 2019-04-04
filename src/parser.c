@@ -79,7 +79,7 @@ int ** image2matrix(char * name, int width, int height){
     return matrix;
 }
 
-void writeMatrix(int ** matrix, int width, int height){
+void writeMatrix(int matrix[][500], int width, int height){
     FILE * out = fopen("data", "w");
     
     if (out == NULL){
@@ -89,6 +89,9 @@ void writeMatrix(int ** matrix, int width, int height){
 
     for (int i = 0; i < height; i++){
         for (int j = 0; j < width; j += 1){
+            if (matrix[i][j] < 0){
+                matrix[i][j] = 255;
+            }
             fprintf(out, "%d ", matrix[i][j]);
         }   
         fprintf(out, "\n");
