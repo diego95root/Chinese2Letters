@@ -1,9 +1,10 @@
 
+_Bool onFirstPane(SDL_Event event);
 _Bool onSecondPane(SDL_Event event);
 
-void initWindow(SDL_Window ** window, int width, int height);
+void initWindow(SDL_Window ** window, SDL_Renderer ** renderer, int width, int height);
 void closeWindow(SDL_Window * window);
-void createDrawingPane(SDL_Renderer * renderer, SDL_Texture ** images, int length);
+void createDrawingPane(SDL_Renderer * renderer);
 void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length);
 
 

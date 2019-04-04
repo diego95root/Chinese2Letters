@@ -4,6 +4,44 @@
 #include "parser.h"
 #include "UI.h"
 
+int strokes = 0;
+
+uint8_t * datahex(char* string) {
+
+    if(string == NULL) 
+       return NULL;
+
+    size_t slength = strlen(string);
+    if((slength % 2) != 0) // must be even
+       return NULL;
+
+    size_t dlength = slength / 2;
+
+    uint8_t* data = malloc(dlength);
+    memset(data, 0, dlength);
+
+    size_t index = 0;
+    while (index < slength) {
+        char c = string[index];
+        int value = 0;
+        if(c >= '0' && c <= '9')
+          value = (c - '0');
+        else if (c >= 'A' && c <= 'F') 
+          value = (10 + (c - 'A'));
+        else if (c >= 'a' && c <= 'f')
+          value = (10 + (c - 'a'));
+        else {
+          free(data);
+          return NULL;
+        }
+
+        data[(index/2)] += value << (((index + 1) % 2) * 4);
+
+        index++;
+    }
+
+    return data;
+}
 
 SDL_Rect * createPane(SDL_Renderer * renderer, int x, int y, int w, int h){
 
@@ -22,10 +60,19 @@ _Bool onSecondPane(SDL_Event event){
     return event.motion.x > 540 && event.motion.x < 1040 && event.motion.y > 20 && event.motion.y < 520;
 }
 
-void createDrawingPane(SDL_Renderer * renderer, SDL_Texture ** images, int length){
+_Bool onFirstPane(SDL_Event event){
+    return event.motion.x < 520 && event.motion.x > 20 && event.motion.y < 520 && event.motion.y > 20;
+}
+
+void createDrawingPane(SDL_Renderer * renderer){
     _Bool leftMouseButtonDown = 0;
     _Bool quit = 0;
     SDL_Event event;
+
+    charScoreList * valueChars = parserInit(strokes);
+    SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+
+    int changedStrokes = 1;
 
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
     int pixels[500][500];
@@ -42,7 +89,22 @@ void createDrawingPane(SDL_Renderer * renderer, SDL_Texture ** images, int lengt
         SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
         SDL_Rect * pane2 = createPane(renderer, 540, 20, 500, 500);
 
-        gridAdd(renderer, images, length);
+        if (changedStrokes){ // Update in case of new stroke
+        
+            if (valueChars->count != 0){ // free if there were any elements
+                freeCharScoreList(valueChars);
+                for (int i = 0; i < valueChars->count; i++){
+                    free(images[i]);
+                }
+                free(images);
+            }
+
+            valueChars = parserInit(strokes);
+            images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+            changedStrokes = 0;
+        }
+
+        gridAdd(renderer, images, valueChars->count);
 
         SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
 
@@ -55,26 +117,43 @@ void createDrawingPane(SDL_Renderer * renderer, SDL_Texture ** images, int lengt
                 break;
             
             case SDL_MOUSEBUTTONUP:
-                if (event.button.button == SDL_BUTTON_LEFT)
+                if (event.button.button == SDL_BUTTON_LEFT && onFirstPane(event)){
                     leftMouseButtonDown = 0;
+                    strokes++;
+                    changedStrokes = 1;
+                    //printf("%d\n", strokes);
                     break;
+                }
             
             case SDL_MOUSEBUTTONDOWN:
-                if (event.button.button == SDL_BUTTON_LEFT)
-                    leftMouseButtonDown = 1;
+                
+                if (event.button.button == SDL_BUTTON_LEFT){
+                    
                     if (onSecondPane(event)){
-                        double x = (event.motion.x - 547)/70;
-                        double y = (event.motion.y - 27)/70;
                         
-                        char *message;
-                        asprintf(&message, "Clicked on image at (%f, %f)\n", round(x), round(y));
+                        int x = round((event.motion.x - 547)/70);
+                        int y = round((event.motion.y - 27)/70);
                         
-                        printf("%s", message);
-                        SDL_SetClipboardText(message);
+                        if ( y * 7 + x < valueChars->count){ // only copy if over image
+
+                            char message[7];
+                            strncpy(message, valueChars->elements[y*7+x].name, 6);
+
+                            uint8_t * data = datahex(message);
+                            char final[4];
+                            strncpy(final, data, 3);
+
+                            //printf("%s\n", final);
+                            SDL_SetClipboardText(final);
+                        }
                     }
+                    else if (onFirstPane(event)){
+                        leftMouseButtonDown = 1;
+                    }
+                }
             
             case SDL_MOUSEMOTION:
-                if (leftMouseButtonDown && event.motion.x - 20 < 500 && event.motion.y - 20 < 500){
+                if (onFirstPane(event) && leftMouseButtonDown){
 
                     int mouseX = event.motion.x - 20;
                     int mouseY = event.motion.y - 20;
@@ -96,16 +175,21 @@ void createDrawingPane(SDL_Renderer * renderer, SDL_Texture ** images, int lengt
                 }
                 else if (onSecondPane(event)){
 
-                    double x = (event.motion.x - 547)/70;
-                    double y = (event.motion.y - 27)/70;
+                    int x = round((event.motion.x - 547)/70);
+                    int y = round((event.motion.y - 27)/70);
 
-                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
-                    SDL_Rect rectangular;
-                    rectangular.x = 540 + 7 + round(x)*70;
-                    rectangular.y = 27 + round(y)*70;
-                    rectangular.w = 65;
-                    rectangular.h = 65;
-                    SDL_RenderFillRect(renderer, &rectangular);
+                    if ( y * 7 + x < valueChars->count){ // only color if over image
+
+                        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
+                        SDL_Rect rectangular;
+                        rectangular.x = 540 + 7 + x*70;
+                        rectangular.y = 27 + y*70;
+                        rectangular.w = 65;
+                        rectangular.h = 65;
+                        SDL_RenderFillRect(renderer, &rectangular);
+                    
+                    }
+                
                 }
                 break;
         }
@@ -116,6 +200,11 @@ void createDrawingPane(SDL_Renderer * renderer, SDL_Texture ** images, int lengt
         free(pane1);
         free(pane2);
     }
+    freeCharScoreList(valueChars);
+    for (int i = 0; i < valueChars->count; i++){
+        free(images[i]);
+    }
+    free(images);
     SDL_DestroyTexture(texture);
 }
 
@@ -158,7 +247,7 @@ void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length){
 
 SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, int * height){
 
-    char sourcePath[30] = "../chars/";
+    char sourcePath[30] = "../chars2/";
     strcat(sourcePath, source);
 
     SDL_Texture * img = IMG_LoadTexture(renderer, sourcePath);
@@ -166,7 +255,7 @@ SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, i
     return img;
 }
 
-void initWindow(SDL_Window ** window, int width, int height){
+void initWindow(SDL_Window ** window, SDL_Renderer ** renderer, int width, int height){
     
     if (SDL_Init(SDL_INIT_VIDEO) < 0){
 
@@ -183,6 +272,9 @@ void initWindow(SDL_Window ** window, int width, int height){
 
         printf("SDL_Error: %s\n", SDL_GetError());
     }
+
+    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED); //renderer used to color rects
+    SDL_SetRenderDrawBlendMode(*renderer, SDL_BLENDMODE_BLEND);
 
 }
 
@@ -210,37 +302,19 @@ SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore * charList, 
 
 int main(int argc, char* args[]){
 
-
-    Database * files = openDB("../chars/");
-    char filename[] = "../chars/5c55_10.png";
-
-    int stroke = 6;
-
-    char ** strokeFiles = getStrokeFiles(stroke, files);
-    int count = getNumberByStroke(stroke, files);
+    SDL_Window   * window   = NULL;
+    SDL_Renderer * renderer = NULL;
     
-    charScore * valueChars = orderCompare(strokeFiles, filename, count);
-
-    SDL_Window * window = NULL;
-    SDL_Surface * surface = NULL;
-    SDL_Rect rects[14][12];
     int width = 1060;
     int height = 540;
+    
+    initWindow(&window, &renderer, width, height);
 
-    initWindow(&window, width, height);
-
-    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED); //renderer used to color rects
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-            
-    SDL_Texture ** images = charScore2texture(renderer, valueChars, count);
-
-    createDrawingPane(renderer, images, count);
-
-    SDL_FreeSurface(surface);
+    createDrawingPane(renderer);
     
     closeWindow(window);
 
-    closeDB(files);
+    parserEnd();
 
     return 0;
 }
