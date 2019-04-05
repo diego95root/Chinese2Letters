@@ -75,11 +75,14 @@ void createDrawingPane(SDL_Renderer * renderer){
     int changedStrokes = 1;
 
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
+    
     int pixels[500][500];
     
-    memset(pixels, 255, 500 * 500 * sizeof(int));
-
-    printf("%d ej\n", pixels[0][0]);
+    for (int i = 0; i < 500; i++){
+        for (int j = 0; j < 500; j++){
+            pixels[i][j] = -257;
+        }
+    }
 
     while (!quit){
 
@@ -253,7 +256,7 @@ void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length){
 
 SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, int * height){
 
-    char sourcePath[30] = "../chars2/";
+    char sourcePath[30] = "../chars3/";
     strcat(sourcePath, source);
 
     SDL_Texture * img = IMG_LoadTexture(renderer, sourcePath);

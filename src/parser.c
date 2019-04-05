@@ -10,7 +10,7 @@ int init = 0;
 charScoreList * parserInit(int stroke){
     
     if (init == 0){
-        files = openDB("../chars2/");
+        files = openDB("../chars3/");
         init = 1;
     }
     
