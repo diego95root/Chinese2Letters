@@ -7,27 +7,25 @@
 Database * files;
 int init = 0;
 
-charScoreList * parserInit(int stroke){
+charScoreList * parserInit(int stroke, int matrix[500][500]){
     
     if (init == 0){
         files = openDB("../chars3/");
         init = 1;
     }
     
-    char filename[] = "../chars/5c55_10.png";
-
     char ** strokeFiles = getStrokeFiles(stroke, files);
     int count = getNumberByStroke(stroke, files);
 
     charScoreList * valueChars;
 
     if (count == -1){
-        valueChars = orderCompare(strokeFiles, filename, 0);
+        valueChars = orderCompare(strokeFiles, matrix, 0);
         free(strokeFiles[0]);
         free(strokeFiles);
     }
     else {
-        valueChars = orderCompare(strokeFiles, filename, count);
+        valueChars = orderCompare(strokeFiles, matrix, count);
     }
 
     return valueChars;
@@ -79,7 +77,7 @@ int ** image2matrix(char * name, int width, int height){
     return matrix;
 }
 
-void writeMatrix(int matrix[][500], int width, int height){
+void writeMatrix(int matrix[500][500], int width, int height){
     FILE * out = fopen("data", "w");
     
     if (out == NULL){
@@ -100,7 +98,24 @@ void writeMatrix(int matrix[][500], int width, int height){
     fclose(out);
 }
 
-charScoreList * orderCompare(char ** chars, char * compareTo, int count){
+void readMatrix(char *filename, int matrix[500][500], int width, int height){
+    
+    FILE * file;
+    file = fopen(filename, "r");
+
+    int i = 0;
+    int count = 0;
+
+    fscanf (file, "%d", &i);    
+    while (!feof (file)){  
+        matrix[count/500][count%500] = i;
+        fscanf (file, "%d", &i); 
+        count++;
+    }
+    fclose (file);  
+}
+
+charScoreList * orderCompare(char ** chars, int compareTo[500][500], int count){
     
     charScoreList * scoreList = malloc(sizeof(charScoreList *) + 8);
 
@@ -117,9 +132,21 @@ charScoreList * orderCompare(char ** chars, char * compareTo, int count){
         charScore * element = malloc(sizeof(charScore *) + 8);
 
         element->name = malloc(sizeof(char) * 15);
-        element->score = 1.5;
-
         strcpy(element->name, chars[i]);
+        
+        // call algorithm and modify args to this function so that it's a matrix?
+        //printf("Name is %s\n", chars[i]);
+        // IMPLEMENTATION REALLY SLOW
+    
+        char sourcePath[30] = "../chars3/";
+        strcat(sourcePath, chars[i]);
+
+        int ** matrix = image2matrix(sourcePath, 500, 500);
+
+        // algorithm HERE returns double as score
+        
+
+        element->score = 1.5;
 
         scoreList->elements[i] = *element;
 
