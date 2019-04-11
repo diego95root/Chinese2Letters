@@ -110,7 +110,6 @@ double correlationCoefficient(int X[500], int Y[500], int n) {
 
 double compareAlgorithm(int compareTo[500][500], int ** matrix){
 
-
     int temp[500][500];
 
     for (int i = 0; i < 500; ++i)
@@ -120,7 +119,6 @@ double compareAlgorithm(int compareTo[500][500], int ** matrix){
     if (find_islands(temp, 500, 500) != find_islands(compareTo, 500, 500)){
         return 0;
     }
-
 
     double result1 = 0;
 
@@ -267,8 +265,10 @@ double compareAlgorithm(int compareTo[500][500], int ** matrix){
 
     //printf("Next:\n[*] %f\n[*] %f\n[*] %f\n[*] %f\n[*] %f\n[*] %f\n", a, b, c, d, e, f);
 
-    //printf("Final result: %f\n", result/(50*50));
-    //return result/(40*40);
+    //printf("Final: %f && %f\n", (result1/(40*40)), ((a+b+c+d+e+f)/6));
+    //return result1/(40*40);
+    return (a+b+c+d+e+f)/6;
+
     return ((result1/(40*40)) + ((a+b+c+d+e+f)/6))/2;
 }
 
