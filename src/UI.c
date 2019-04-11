@@ -80,8 +80,6 @@ void createDrawingPane(SDL_Renderer * renderer){
     charScoreList * valueChars = parserInit(strokes, pixels);
     SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, valueChars->count);
 
-    int changedStrokes = 1;
-
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
 
     while (!quit){
@@ -94,21 +92,6 @@ void createDrawingPane(SDL_Renderer * renderer){
 
         SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
         SDL_Rect * pane2 = createPane(renderer, 540, 20, 500, 500);
-
-        if (changedStrokes){ // Update in case of new stroke
-        
-            if (valueChars->count != 0){ // free if there were any elements
-                freeCharScoreList(valueChars);
-                for (int i = 0; i < valueChars->count; i++){
-                    free(images[i]);
-                }
-                free(images);
-            }
-
-            valueChars = parserInit(strokes, pixels);
-            images = charScore2texture(renderer, valueChars->elements, valueChars->count);
-            changedStrokes = 0;
-        }
 
         gridAdd(renderer, images, valueChars->count);
 
@@ -126,8 +109,23 @@ void createDrawingPane(SDL_Renderer * renderer){
                 if (event.button.button == SDL_BUTTON_LEFT && onFirstPane(event)){
                     leftMouseButtonDown = 0;
                     strokes++;
-                    changedStrokes = 1;
                     //printf("%d\n", strokes);
+
+                    // Update in case of new stroke
+        
+                    if (valueChars->count != 0){ // free if there were any elements
+                        freeCharScoreList(valueChars);
+                        for (int i = 0; i < valueChars->count; i++){
+                            free(images[i]);
+                        }
+                        free(images);
+                    }
+
+                    valueChars = parserInit(strokes, pixels);
+                    images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+
+                    gridAdd(renderer, images, valueChars->count);
+
                     break;
                 }
             
