@@ -3,7 +3,8 @@
 #include <math.h>
 #include "algorithm.h"
 
-int mainIslands;
+int mainIslandsWhite;
+int mainIslandsBlack;
 
 int row_pixels[500]; 
 int col_pixels[500]; 
@@ -21,7 +22,7 @@ Cell can be entered if within range, not visited and is black
 int can_enter_cell(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col){
     
     if (cur_row < 0 || cur_row >= ROWS || cur_col < 0 || cur_col >= COLS
-        || is_visited[cur_row][cur_col] || matrix[cur_row][cur_col] != 0) {
+        || is_visited[cur_row][cur_col] || matrix[cur_row][cur_col] == 0) {
 
         return 0;
     }
@@ -29,6 +30,16 @@ int can_enter_cell(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_r
     return 1;
 }
  
+int can_enter_cell2(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col){
+    
+    if (cur_row < 0 || cur_row >= ROWS || cur_col < 0 || cur_col >= COLS
+        || is_visited[cur_row][cur_col] || matrix[cur_row][cur_col] != 0) {
+
+        return 0;
+    }
+ 
+    return 1;
+}
  
 /* Helper function to count the number of islands of 1's
 matrix: 2d matrix consisting of 0's and 1's
@@ -53,7 +64,7 @@ void expand_search(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_r
         for (j = -1; j <= 1; ++j) {
 
             int is_safe_cell = can_enter_cell(matrix, is_visited, cur_row+i, cur_col+j);
- 
+
             if (is_safe_cell) {
                 expand_search(matrix, is_visited, cur_row+i, cur_col+j);
             }
@@ -61,7 +72,59 @@ void expand_search(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_r
     }
 }
  
-int find_islands(int matrix[ROWS][COLS]){
+
+void expand_search2(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col){
+
+    int i, j;
+ 
+    is_visited[cur_row][cur_col] = 1;
+ 
+    /*For the current cell, find out if we can continue the island of 1's
+    with its neighbors. Each cell has 9 neighbors. The rows
+    of neighbors will vary from cur_row - 1 to cur_row + 1
+    The columns of the neighbors will vary from cur_col - 1
+    to cur_col + 1*/
+
+    for (i = -1; i <= 1; ++i) {
+        for (j = -1; j <= 1; ++j) {
+
+            int is_safe_cell = can_enter_cell2(matrix, is_visited, cur_row+i, cur_col+j);
+
+            if (is_safe_cell) {
+                expand_search2(matrix, is_visited, cur_row+i, cur_col+j);
+            }
+        }
+    }
+}
+
+int find_islandsW(int matrix[ROWS][COLS]){
+
+    int is_visited[ROWS][COLS];
+    int i, j, count;
+ 
+    /*Initially all cells are not yet visited*/
+    for (i = 0; i < ROWS; ++i)
+        for (j = 0; j < COLS; ++j) 
+            is_visited[i][j] = 0;
+ 
+    /*Search all the cells in matrix that are not yet visited*/
+    count = 0; // FIX THE FACT THAT TESTS DONT NEED THIS ONE AND THE MINUS BELOW BUT ACTUAL THING DOES WTFFF
+    for (i = 0; i < ROWS; ++i) {
+        for (j = 0; j < COLS; ++j) {
+            if (abs(matrix[i][j]) > 254 && !is_visited[i][j]) {
+
+                /*We have found an island. Now expand the island 
+                in all directions*/
+                expand_search(matrix, is_visited, i, j);
+                ++count;
+            }
+        }
+    }
+    return count;
+
+}
+
+int find_islandsB(int matrix[ROWS][COLS]){
 
     int is_visited[ROWS][COLS];
     int i, j, count;
@@ -79,7 +142,7 @@ int find_islands(int matrix[ROWS][COLS]){
 
                 /*We have found an island. Now expand the island 
                 in all directions*/
-                expand_search(matrix, is_visited, i, j);
+                expand_search2(matrix, is_visited, i, j);
                 ++count;
             }
         }
@@ -119,7 +182,10 @@ double correlationCoefficient(int X[500], int Y[500], int n) {
 
 void setCompareTo(int compareTo[500][500]){
 
-    mainIslands = find_islands(compareTo);
+    mainIslandsWhite = find_islandsW(compareTo);
+    mainIslandsBlack = find_islandsB(compareTo);
+
+    printf("Islands: %d & %d\n", mainIslandsWhite, mainIslandsBlack);
 
     for (int i = 0; i < 500; i++) row_pixels[i] = 0; 
     for (int i = 0; i < 500; i++) col_pixels[i] = 0;
@@ -186,9 +252,12 @@ double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initF
 
     if (initFlag){
         setCompareTo(compareTo);
+        //printf("New set! Calculations are: %d and %d\n", mainIslandsWhite, mainIslandsBlack);
     }
 
-    if (find_islands(matrix) != mainIslands){
+    //printf("- %d and %d\n", find_islandsW(matrix), find_islandsB(matrix));
+
+    if (find_islandsW(matrix) != mainIslandsWhite || find_islandsB(matrix) != mainIslandsBlack){
         return 0;
     }
 
