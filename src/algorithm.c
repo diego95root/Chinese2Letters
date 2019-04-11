@@ -2,21 +2,20 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define MAX_NUM_COLS 500
-#define MAX_NUM_ROWS 500
+#define COLS 500
+#define ROWS 500
+
+// code main idea from http://www.interviewdruid.com/find-the-number-of-islands-in-a-matrix/
 
 /*
-Helper function that indicates if we can enter the cell or not
+Cell can be entered if within range, not visited and is black
 */
-int can_enter_cell(int matrix[][MAX_NUM_COLS], int is_visited[][MAX_NUM_COLS], 
-        int cur_row, int cur_col, int n_rows, int n_cols){
-    /*If we are outside the bounds of the matrix or
-    if the cell is already visited or if the value in cell is 0
-    then we shouldn't enter the cell */
-    if (cur_row < 0 || cur_row >= n_rows 
-        || cur_col < 0 || cur_col >= n_cols
-        || is_visited[cur_row][cur_col] 
-        || matrix[cur_row][cur_col] != 0) {
+
+int can_enter_cell(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col){
+    
+    if (cur_row < 0 || cur_row >= ROWS || cur_col < 0 || cur_col >= COLS
+        || is_visited[cur_row][cur_col] || matrix[cur_row][cur_col] != 0) {
+
         return 0;
     }
  
@@ -32,8 +31,10 @@ cur_col: column of the current cell being processed
 n_rows: number of rows in the matrix
 n_cols: number of columns in the matrix 
 */
-void expand_search(int matrix[][MAX_NUM_COLS], int is_visited[][MAX_NUM_COLS], 
-    int cur_row, int cur_col, int n_rows, int n_cols){
+
+void expand_search(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], 
+    
+    int cur_row, int cur_col){
     int i, j;
  
     is_visited[cur_row][cur_col] = 1;
@@ -43,20 +44,22 @@ void expand_search(int matrix[][MAX_NUM_COLS], int is_visited[][MAX_NUM_COLS],
     of neighbors will vary from cur_row - 1 to cur_row + 1
     The columns of the neighbors will vary from cur_col - 1
     to cur_col + 1*/
+
     for (i = -1; i <= 1; ++i) {
         for (j = -1; j <= 1; ++j) {
-            int is_safe_cell = can_enter_cell(matrix, is_visited, cur_row+i, cur_col+j, n_rows, n_cols);
+
+            int is_safe_cell = can_enter_cell(matrix, is_visited, cur_row+i, cur_col+j);
  
             if (is_safe_cell) {
-                expand_search(matrix, is_visited, cur_row+i, cur_col+j, n_rows, n_cols);
+                expand_search(matrix, is_visited, cur_row+i, cur_col+j);
             }
         }
     }
 }
  
-int find_islands(int matrix[500][500], int n_rows, int n_cols){
+int find_islands(int matrix[ROWS][COLS]){
 
-    int is_visited[500][500];
+    int is_visited[ROWS][COLS];
     int i, j, count;
  
     /*Initially all cells are not yet visited*/
@@ -66,8 +69,8 @@ int find_islands(int matrix[500][500], int n_rows, int n_cols){
  
     /*Search all the cells in matrix that are not yet visited*/
     count = 0;
-    for (i = 0; i < n_rows; ++i) {
-        for (j = 0; j < n_cols; ++j) {
+    for (i = 0; i < ROWS; ++i) {
+        for (j = 0; j < COLS; ++j) {
             if (matrix[i][j] == 0 && !is_visited[i][j]) {
 
                 /*We have found an island. Now expand the island 
@@ -77,7 +80,9 @@ int find_islands(int matrix[500][500], int n_rows, int n_cols){
             }
         }
     }
+
     return count;
+
 }
 
 double correlationCoefficient(int X[500], int Y[500], int n) { 
@@ -120,8 +125,6 @@ double compareAlgorithm(int compareTo[500][500], int ** matrix){
         return 0;
     }
 
-    double result1 = 0;
-
     double tolerance = 1;
 
     // actual character
@@ -142,107 +145,82 @@ double compareAlgorithm(int compareTo[500][500], int ** matrix){
     int row_left2[500] = {0};   
     int row_right2[500] = {0};
 
-    for (int i = 5; i < 45; i ++){ // exclude borders
-        for (int j = 5; j < 45; j ++){
-            
-            double sum1 = 0;
+    for (int x = 0; x < 500; x++){
+        for (int y = 0; y < 500; y++){
 
-            double sum2 = 0;
+            // row_pixels & column pixels handled here
 
-            if (45 - i < 40 && 45 - i > 5 && 45 - j < 40 && 45 - j > 5){
-                tolerance = 1;
-            }
-            else {
-                tolerance = 0.8;
+            if (compareTo[x][y] == 0){
+                row_pixels[x]++;
+                col_pixels[y]++;
             }
 
-            for (int x = i * 10; x < (i+1)*10; x++){
-                for (int y = j * 10; y < (j+1)*10; y++){
-
-                    sum1 += tolerance * (matrix[x][y] / 255);
-                    if (compareTo[x][y] < 0){ // handle this somewhere else
-                        sum2 += tolerance * 1;
-                    }
-                    else {
-                        sum2 += tolerance * (compareTo[x][y] / 255);
-                    }
-
-                    // row_pixels & column pixels handled here
-
-                    if (compareTo[x][y] == 0){
-                        row_pixels[x]++;
-                        col_pixels[y]++;
-                    }
-
-                    if (matrix[x][y] == 0){
-                        row_pixels2[x]++;
-                        col_pixels2[y]++;
-                    }
-
-                }
+            if (matrix[x][y] == 0){
+                row_pixels2[x]++;
+                col_pixels2[y]++;
             }
 
-            //average[i][j] = sum1/100;
-            //printf("%f and %f\n", sum1, sum2);
-            result1 += 1 - (abs(sum1-sum2)/100);
-            
-            /*
-            printf("Sum1: %f\n", sum1);
-            printf("Sum2: %f\n", sum2);
-            printf("Formula: %f\n", 1-(abs(sum1-sum2)/100));
-            */
         }
-        //printf("\nRow: %f\n", result);
     }
+        
+    int left_found; 
+    int right_found; 
+    int colT_found;
+    int colB_found;
 
     for (int i = 0; i < 500; i ++){
+        
+        left_found = 0;
+        right_found = 0;
+        colT_found = 0;
+        colB_found = 0;
+
         for (int j = 0; j < 500; j ++){
-            if (compareTo[i][j] == 0){
+            if (left_found && right_found && colT_found && colB_found){
+                break;
+            }
+            if (compareTo[i][j] == 0 && !left_found){
                 row_left[i] = j;
-                break;
+                left_found = 1;
             }
-        }
-        for (int j = 0; j < 500; j ++){
-            if (compareTo[i][500-j-1] == 0){
+            if (compareTo[i][500-j-1] == 0 && !right_found){
                 row_right[i] = j;
-                break;
+                right_found = 1;
             }
-        }
-        for (int j = 0; j < 500; j ++){
-            if (compareTo[j][i] == 0){
+            if (compareTo[j][i] == 0 && !colT_found){
                 col_top[i] = j;
-                break;
+                colT_found = 1;
             }
-        }
-        for (int j = 0; j < 500; j ++){
-            if (compareTo[500-j-1][i] == 0){
+            if (compareTo[500-j-1][i] == 0 && !colB_found){
                 col_bottom[i] = j;
-                break;
+                colB_found = 1;
             }
         }
 
+        left_found = 0;
+        right_found = 0;
+        colT_found = 0;
+        colB_found = 0;
+
         for (int j = 0; j < 500; j ++){
-            if (matrix[i][j] == 0){
+            if (left_found && right_found && colT_found && colB_found){
+                break;
+            }
+            if (matrix[i][j] == 0 && !left_found){
                 row_left2[i] = j;
-                break;
+                left_found = 1;
             }
-        }
-        for (int j = 0; j < 500; j ++){
-            if (matrix[i][500-j-1] == 0){
+            if (matrix[i][500-j-1] == 0 && !right_found){
                 row_right2[i] = j;
-                break;
+                right_found = 1;
             }
-        }
-        for (int j = 0; j < 500; j ++){
-            if (matrix[j][i] == 0){
+            if (matrix[j][i] == 0 && !colT_found){
                 col_top2[i] = j;
-                break;
+                colT_found = 1;
             }
-        }
-        for (int j = 0; j < 500; j ++){
-            if (matrix[500-j-1][i] == 0){
+            if (matrix[500-j-1][i] == 0 && !colB_found){
                 col_bottom2[i] = j;
-                break;
+                colB_found = 1;
             }
         }
     }
@@ -266,9 +244,6 @@ double compareAlgorithm(int compareTo[500][500], int ** matrix){
     //printf("Next:\n[*] %f\n[*] %f\n[*] %f\n[*] %f\n[*] %f\n[*] %f\n", a, b, c, d, e, f);
 
     //printf("Final: %f && %f\n", (result1/(40*40)), ((a+b+c+d+e+f)/6));
-    //return result1/(40*40);
     return (a+b+c+d+e+f)/6;
-
-    return ((result1/(40*40)) + ((a+b+c+d+e+f)/6))/2;
 }
 
