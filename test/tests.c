@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>
 #include "unity.h"
 #include "database.h"
 #include "parser.h"
@@ -98,11 +99,11 @@ void test_ScoresSortedCorrectly(){
     Database * files = openDB("../chars3/");
     double arr[][15] = {
     {1, 9, 23, 34, 37, 50, 34, 35, 29, 16, 12, 10, 7, 1, 2},
-    {1, 1, 2, 7, 9, 10, 12, 16, 23, 29, 34, 34, 35, 37, 50},
+    {50, 37, 35, 34, 34, 29, 23, 16, 12, 10, 9, 7, 2, 1, 1},
     {1.01, 9.872, 23.7, 34.2, 37.6, 50.1, 34.3, 35.444, 29.2, 16.1, 12.6, 10.89, 7.99, 1, 2},
-    {1, 1.01, 2, 7.99, 9.872, 10.89, 12.6, 16.1, 23.7, 29.2, 34.3, 34, 35.444, 37.6, 50.1},
+    {50.1, 37.6, 35.444, 34.3, 34.2, 29.2, 23.7, 16.1, 12.6, 10.89, 9.872, 7.99, 2, 1.01, 1},
     {0.01, 0.872, 0.7, 0.2, 0.6, 0.134, 0.3, 0.444, 0.2, 0.1, 0.69, 0.89, 0.99, 0.1, 0.23},
-    {0.01, 0.1, 0.1, 0.134, 0.2, 0.2, 0.23, 0.3, 0.444, 0.6, 0.69, 0.7, 0.872, 0.89, 0.99}};
+    {0.99, 0.89, 0.872, 0.7, 0.69, 0.6, 0.444, 0.3, 0.23, 0.2, 0.2, 0.134, 0.1, 0.1, 0.01}};
     for (int i = 0; i < 2; i+=2){
         sortListTest(arr[i], 15);
         TEST_ASSERT_EQUAL_DOUBLE_ARRAY(arr[i+1], arr[i], 15);
@@ -111,7 +112,52 @@ void test_ScoresSortedCorrectly(){
 }
 
 void test_comparisonReturnsCharacter(){
+    char * arr[] = {"e4bda0_07.png",  
+                    "e68891_07.png",  
+                    "e69687_04.png",  
+                    "e69c9f_12.png",  
+                    "e794a8_05.png",
+                    "e5b0b1_12.png",  
+                    "e68898_09.png",  
+                    "e69c89_06.png",  
+                    "e7949f_05.png",  
+                    "e997ae_06.png"};
+    
+    size_t length = sizeof(arr) / sizeof(arr[0]);
 
+    for (int i = 0; i < length; i++){
+
+        char wholename[40] = "../test/dataImages/data-";
+        strcat(wholename, arr[i]);
+
+        int matrix[500][500];
+        readMatrix(wholename, matrix, 500, 500);
+
+        char name[20]; // need to copy the constant string out from RO memory
+        strcpy(name, arr[i]);
+
+        char ** splitted = splitFilename(name); // obtain number of strokes for comparison
+        int strokes = atoi(splitted[1]);
+        free(splitted[0]);
+        free(splitted[1]);
+        free(splitted);
+
+        charScoreList * results = parserInit(strokes, matrix);
+        
+        printf("whole: %s, normal: %s, results: ", wholename, arr[i]);
+
+        for (int j = 0; j < results->count; j++){
+            if (strcmp(results->elements[j].name, arr[i]) == 0){
+                printf("%d out of %d\n", j, results->count);
+                break;
+            }
+        }
+
+        freeCharScoreList(results);
+
+    }
+
+    parserEnd();
 }
 
 int main(){
@@ -125,7 +171,7 @@ int main(){
     // TEST FOR READ AND WRITE
 
     int pixels[500][500];
-    char file[] = "../test/dataImages/data-e69687_04.png";
+    char file[] = "e69687_04.png";
 
     readMatrix(file, pixels, 500, 500);
     writeMatrix(pixels, 500, 500);
