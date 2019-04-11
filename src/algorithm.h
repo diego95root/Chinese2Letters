@@ -1,0 +1,1 @@
+double compareAlgorithm(int compareTo[500][500], int ** matrix);
