@@ -1,7 +1,7 @@
 #define COLS 500
 #define ROWS 500
 
-double compareAlgorithm(int compareTo[500][500], int matrix[500][500]);
+double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initFlag);
 
 int can_enter_cell(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col);
 void expand_search(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col);

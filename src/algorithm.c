@@ -3,6 +3,15 @@
 #include <math.h>
 #include "algorithm.h"
 
+int mainIslands;
+
+int row_pixels[500]; 
+int col_pixels[500]; 
+int col_top[500];    
+int col_bottom[500]; 
+int row_left[500];   
+int row_right[500];
+
 // code main idea from http://www.interviewdruid.com/find-the-number-of-islands-in-a-matrix/
 
 /*
@@ -29,7 +38,7 @@ cur_col: column of the current cell being processed
 */
 
 void expand_search(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col){
-    
+
     int i, j;
  
     is_visited[cur_row][cur_col] = 1;
@@ -108,34 +117,16 @@ double correlationCoefficient(int X[500], int Y[500], int n) {
     return corr; 
 } 
 
-double compareAlgorithm(int compareTo[500][500], int matrix[500][500]){
+void setCompareTo(int compareTo[500][500]){
 
-    // To improve efficiency calculations on compareTo should only be done once,
-    // as they are expensive and all the matrices are being compared to the same.
+    mainIslands = find_islands(compareTo);
 
-    if (find_islands(matrix) != find_islands(compareTo)){
-        return 0;
-    }
-
-    double tolerance = 1;
-
-    // actual character
-
-    int row_pixels[500] = {0}; 
-    int col_pixels[500] = {0}; 
-    int col_top[500] = {0};    
-    int col_bottom[500] = {0}; 
-    int row_left[500] = {0};   
-    int row_right[500] = {0};
-
-    // sample
-
-    int row_pixels2[500] = {0}; 
-    int col_pixels2[500] = {0}; 
-    int col_top2[500] = {0};    
-    int col_bottom2[500] = {0}; 
-    int row_left2[500] = {0};   
-    int row_right2[500] = {0};
+    for (int i = 0; i < 500; i++) row_pixels[i] = 0; 
+    for (int i = 0; i < 500; i++) col_pixels[i] = 0;
+    for (int i = 0; i < 500; i++) col_bottom[i] = 0; 
+    for (int i = 0; i < 500; i++) col_top[i] = 0;
+    for (int i = 0; i < 500; i++) row_left[i] = 0; 
+    for (int i = 0; i < 500; i++) row_right[i] = 0; 
 
     for (int x = 0; x < 500; x++){
         for (int y = 0; y < 500; y++){
@@ -146,15 +137,10 @@ double compareAlgorithm(int compareTo[500][500], int matrix[500][500]){
                 row_pixels[x]++;
                 col_pixels[y]++;
             }
-
-            if (matrix[x][y] == 0){
-                row_pixels2[x]++;
-                col_pixels2[y]++;
-            }
-
         }
     }
         
+
     int left_found; 
     int right_found; 
     int colT_found;
@@ -188,7 +174,53 @@ double compareAlgorithm(int compareTo[500][500], int matrix[500][500]){
                 colB_found = 1;
             }
         }
+    }
 
+}
+
+double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initFlag){
+
+    // To improve efficiency calculations on compareTo should only be done once,
+    // as they are expensive and all the matrices are being compared to the same.
+    // if flag then calculate compareTo for all the rest of the set
+
+    if (initFlag){
+        setCompareTo(compareTo);
+    }
+
+    if (find_islands(matrix) != mainIslands){
+        return 0;
+    }
+
+    // sample
+
+    int row_pixels2[500] = {0}; 
+    int col_pixels2[500] = {0}; 
+    int col_top2[500] = {0};    
+    int col_bottom2[500] = {0}; 
+    int row_left2[500] = {0};   
+    int row_right2[500] = {0};
+
+    for (int x = 0; x < 500; x++){
+        for (int y = 0; y < 500; y++){
+
+            // row_pixels & column pixels handled here
+
+            if (matrix[x][y] == 0){
+                row_pixels2[x]++;
+                col_pixels2[y]++;
+            }
+
+        }
+    }
+        
+    int left_found; 
+    int right_found; 
+    int colT_found;
+    int colB_found;
+
+    for (int i = 0; i < 500; i ++){
+        
         left_found = 0;
         right_found = 0;
         colT_found = 0;

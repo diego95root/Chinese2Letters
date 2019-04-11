@@ -36,16 +36,8 @@ void parserEnd(){
     closeDB(files);
 }
 
-int ** image2matrix(char * name, int width, int height){
+void image2matrix(int matrix[500][500], char * name, int width, int height){
 
-    // allocate needed memory for the image
-
-    int **matrix;
-    matrix = malloc(sizeof(int[width][height]));
-
-    for (int i = 0; i<width; i++){
-        matrix[i] = malloc(sizeof(int) * height);
-    }
     
     FILE *fp = fopen(name, "r");
     
@@ -74,8 +66,6 @@ int ** image2matrix(char * name, int width, int height){
     
     png_destroy_read_struct(&pngptr, &pnginfo, NULL);
     fclose(fp);
-
-    return matrix;
 }
 
 void writeMatrix(int matrix[500][500], int width, int height){
@@ -135,18 +125,16 @@ charScoreList * orderCompare(char ** chars, int compareTo[500][500], int count){
         element->name = malloc(sizeof(char) * 15);
         strcpy(element->name, chars[i]);
         
-        // call algorithm and modify args to this function so that it's a matrix?
-        //printf("Name is %s\n", chars[i]);
-        // IMPLEMENTATION REALLY SLOW
-    
         char sourcePath[30] = "../chars3/";
         strcat(sourcePath, chars[i]);
 
-        int ** matrix = image2matrix(sourcePath, 500, 500);
+        int matrix[500][500];
+        
+        image2matrix(matrix, sourcePath, 500, 500);
 
         // algorithm HERE returns double as score
 
-        double score = compareAlgorithm(compareTo, matrix);;
+        double score = compareAlgorithm(compareTo, matrix, (i == 0));
 
         //printf("%f for %s\n", score, sourcePath);        
 
@@ -155,11 +143,6 @@ charScoreList * orderCompare(char ** chars, int compareTo[500][500], int count){
         scoreList->elements[i] = *element;
 
         free(element);
-        
-        for (int j = 0; j < 500; j++){
-            free(matrix[j]);
-        }
-        free(matrix);
 
     }
 
