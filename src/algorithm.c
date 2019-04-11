@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
-#define COLS 500
-#define ROWS 500
+#include "algorithm.h"
 
 // code main idea from http://www.interviewdruid.com/find-the-number-of-islands-in-a-matrix/
 
@@ -28,13 +26,10 @@ matrix: 2d matrix consisting of 0's and 1's
 is_visited: if cell (i, j) has been visited, is_visited[i][j] is set to 1
 cur_row: row of the current cell being processed
 cur_col: column of the current cell being processed
-n_rows: number of rows in the matrix
-n_cols: number of columns in the matrix 
 */
 
-void expand_search(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], 
+void expand_search(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col){
     
-    int cur_row, int cur_col){
     int i, j;
  
     is_visited[cur_row][cur_col] = 1;
@@ -63,8 +58,8 @@ int find_islands(int matrix[ROWS][COLS]){
     int i, j, count;
  
     /*Initially all cells are not yet visited*/
-    for (i = 0; i < n_rows; ++i)
-        for (j = 0; j < n_cols; ++j) 
+    for (i = 0; i < ROWS; ++i)
+        for (j = 0; j < COLS; ++j) 
             is_visited[i][j] = 0;
  
     /*Search all the cells in matrix that are not yet visited*/
@@ -75,7 +70,7 @@ int find_islands(int matrix[ROWS][COLS]){
 
                 /*We have found an island. Now expand the island 
                 in all directions*/
-                expand_search(matrix, is_visited, i, j, n_rows, n_cols);
+                expand_search(matrix, is_visited, i, j);
                 ++count;
             }
         }
@@ -113,15 +108,12 @@ double correlationCoefficient(int X[500], int Y[500], int n) {
     return corr; 
 } 
 
-double compareAlgorithm(int compareTo[500][500], int ** matrix){
+double compareAlgorithm(int compareTo[500][500], int matrix[500][500]){
 
-    int temp[500][500];
+    // To improve efficiency calculations on compareTo should only be done once,
+    // as they are expensive and all the matrices are being compared to the same.
 
-    for (int i = 0; i < 500; ++i)
-        for (int j = 0; j < 500; ++j) 
-            temp[i][j] = matrix[i][j];
-
-    if (find_islands(temp, 500, 500) != find_islands(compareTo, 500, 500)){
+    if (find_islands(matrix) != find_islands(compareTo)){
         return 0;
     }
 
