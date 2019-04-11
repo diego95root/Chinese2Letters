@@ -112,8 +112,8 @@ void test_ScoresSortedCorrectly(){
 }
 
 void test_comparisonReturnsCharacter(){
-    char * arr[] = {"e4bda0_07.png",  
-                    "e68891_07.png",  
+    char * arr[] = {"e4bda0_07.png",  // `ni` character with a stroke that is not joint correctly (islands + 1)
+                    "e68891_07.png",  // `wo` written incorrectly, with bad strokes 
                     "e69687_04.png",  
                     "e69c9f_12.png",  
                     "e794a8_05.png",
