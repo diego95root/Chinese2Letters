@@ -3,6 +3,7 @@
 #include <string.h>
 #include "parser.h"
 #include "database.h"
+#include "algorithm.h"
 
 Database * files;
 int init = 0;
@@ -144,15 +145,25 @@ charScoreList * orderCompare(char ** chars, int compareTo[500][500], int count){
         int ** matrix = image2matrix(sourcePath, 500, 500);
 
         // algorithm HERE returns double as score
-        
 
-        element->score = 1.5;
+        double score = compareAlgorithm(compareTo, matrix);;
+
+        //printf("%f for %s\n", score, sourcePath);        
+
+        element->score = score;
 
         scoreList->elements[i] = *element;
 
         free(element);
+        
+        for (int j = 0; j < 500; j++){
+            free(matrix[j]);
+        }
+        free(matrix);
 
     }
+
+    sortList(scoreList->elements, count);
 
     return scoreList;
 }
@@ -176,7 +187,7 @@ void sortList(charScore * list, int count){
     do {
         none = 0;
         for (int x = 0; x < count-1; x++){
-            if (list[x].score > list[x+1].score){
+            if (list[x].score < list[x+1].score){
                 charScore a = list[x+1];
                 list[x+1] = list[x];
                 list[x] = a;
@@ -191,7 +202,7 @@ void sortListTest(double * list, int count){
     do {
         none = 0;
         for (int x = 0; x < count-1; x++){
-            if (list[x] > list[x+1]){
+            if (list[x] < list[x+1]){
                 double a = list[x+1];
                 list[x+1] = list[x];
                 list[x] = a;
