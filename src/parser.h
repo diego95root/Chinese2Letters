@@ -9,7 +9,7 @@ typedef struct charScoreList {
     int count;
 } charScoreList;
 
-int ** image2matrix(char * name, int width, int height);
+void image2matrix(int matrix[500][500], char * name, int width, int height);
 void writeMatrix(int matrix[500][500], int width, int height);
 void readMatrix(char *filename, int matrix[500][500], int width, int height);
 charScoreList * orderCompare(char ** chars, int matrix[500][500], int count);
