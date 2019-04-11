@@ -69,13 +69,6 @@ void createDrawingPane(SDL_Renderer * renderer){
     _Bool quit = 0;
     SDL_Event event;
 
-    charScoreList * valueChars = parserInit(strokes);
-    SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, valueChars->count);
-
-    int changedStrokes = 1;
-
-    SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
-    
     int pixels[500][500];
     
     for (int i = 0; i < 500; i++){
@@ -83,6 +76,13 @@ void createDrawingPane(SDL_Renderer * renderer){
             pixels[i][j] = -257;
         }
     }
+
+    charScoreList * valueChars = parserInit(strokes, pixels);
+    SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+
+    int changedStrokes = 1;
+
+    SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
 
     while (!quit){
 
@@ -105,7 +105,7 @@ void createDrawingPane(SDL_Renderer * renderer){
                 free(images);
             }
 
-            valueChars = parserInit(strokes);
+            valueChars = parserInit(strokes, pixels);
             images = charScore2texture(renderer, valueChars->elements, valueChars->count);
             changedStrokes = 0;
         }
