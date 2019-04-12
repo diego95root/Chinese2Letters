@@ -149,7 +149,7 @@ Database * openDB(char * directory){
     DIR *dir;
     struct dirent *file;
     
-    Database * array = malloc(sizeof(Database) + 8);
+    Database * array = malloc(sizeof(Database));
 
     // array with the number of characters with x strokes
     int arr[MAX_STROKES] = {0};
@@ -192,7 +192,7 @@ Database * openDB(char * directory){
 
         strokesGroup * group = &array->groups[i];
 
-        group->names = malloc(sizeof(char *) * arr[i] + 8);
+        group->names = malloc(sizeof(char *) * arr[i]);
         group->strokes = i+1;
         group->count = 0;
         for (int x = 0; x < arr[i]; x++){
