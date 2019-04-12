@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <dirent.h>
 #include <string.h>
@@ -37,13 +36,10 @@ enum
   };
 */
 
-/*
 
-Takes a filename of the format XXXX_XX.png where the first X's are
-hex chars and the second two X's are the number of strokes. Returns
-an array of the two strings: the hex representation and the strokes.
-
-*/
+// Takes a filename of the format XXXXXX_XX.png where the first X's are
+// hex chars and the second two X's are the number of strokes. Returns
+// an array of the two strings: the first hex chars and the strokes.
 
 char ** splitFilename(char * name){
 
@@ -73,17 +69,12 @@ char ** splitFilename(char * name){
     return splitted;
 }
 
-/*
-
-Adds a value to a an array
-
-*/
-
-
+// Adds a value to a an array by checking which is the last
+// element (the empty string)
 
 void addValue(char * value, char ** head, int len){
 
-    for (int i = 0; i<len; i++){
+    for (int i = 0; i < len; i++){
         if (strcmp(head[i], "") == 0){
             strcpy(head[i], value);
             break;
@@ -91,46 +82,44 @@ void addValue(char * value, char ** head, int len){
     }
 }
 
-/*
 
-Taking the number of strokes and the database structure, it
-returns an array of all the filenames that contain characters with
-that number of strokes.
+// Taking the number of strokes and the database structure, it
+// returns an array of all the filenames that contain characters with
+// that number of strokes.
 
-*/
-
-char **  getStrokeFiles(int stroke, Database * files){
+char ** getStrokeFiles(int stroke, Database * files){
 
     if (stroke > MAX_STROKES || stroke == 0){ // empty array if stroke not valid
+        
         char ** strokeFiles = malloc(sizeof(char *));
-        strokeFiles[0] = malloc(sizeof(char)*2);
+        strokeFiles = malloc(sizeof(char));
         strcpy(strokeFiles[0], "");
         return strokeFiles;
+    
     }
 
-    return files->groups[stroke].names;
+    return files->groups[stroke-1].names;
 }
 
-/*
 
-Returns the number of characters that have a specified stroke number
+// Returns the number of characters that have a specified stroke
+// number from the database 
 
-*/
 
 int getNumberByStroke(int stroke, Database * files){
+    
     if (stroke > MAX_STROKES || stroke == 0){
         return -1;
     }
-    return files->groups[stroke].count;
+
+    return files->groups[stroke-1].count;
 }
 
-/*
 
-Prints an array of strings terminated with an empty string
-
-*/
+// Prints an array of strings terminated with an empty string
 
 void printArray(char ** array){
+    
     int i = 0;
 
     printf("[*] [");
@@ -148,13 +137,12 @@ void printArray(char ** array){
     printf("\b\b]\n");
 }
 
-/*
 
-openDB gets all filenames from a directory and based on the stroke
-number of the character stores them in a different array. Sort 
-of a python dictionary. It returns that structure.
+// openDB gets all filenames from a directory and based on the stroke
+// number of the character stores them in a different array, keeping 
+//count of the length of that array and the total number of characters. 
+// Sort of a python dictionary. It returns that structure.
 
-*/
 
 Database * openDB(char * directory){
 
@@ -163,8 +151,8 @@ Database * openDB(char * directory){
     
     Database * array = malloc(sizeof(Database) + 8);
 
-    // array to store the number of characters with x strokes
-    int arr[MAX_STROKES+1] = {0};
+    // array with the number of characters with x strokes
+    int arr[MAX_STROKES] = {0};
 
     int numFiles = 0;
 
@@ -174,6 +162,7 @@ Database * openDB(char * directory){
                 
                 char ** splitted = splitFilename(file->d_name);
                 int strokes = atoi(splitted[1]);
+                
                 free(splitted[0]);
                 free(splitted[1]);
                 free(splitted);
@@ -182,7 +171,7 @@ Database * openDB(char * directory){
                     continue;
                 }
 
-                arr[strokes]++;
+                arr[strokes-1]++;
 
                 numFiles++;
 
@@ -203,7 +192,7 @@ Database * openDB(char * directory){
 
 
     // allocate memory for each array and each string on it
-    for (int i = 1; i <= MAX_STROKES; i++){
+    for (int i = 0; i < MAX_STROKES; i++){
         if (DEBUG){
             printf("Value at %d: %d\n", i, arr[i]);
         }
@@ -211,17 +200,19 @@ Database * openDB(char * directory){
         strokesGroup * group = &array->groups[i];
 
         group->names = malloc(sizeof(char *) * arr[i] + 8);
-        group->strokes = i;
+        group->strokes = i+1;
         group->count = 0;
-        for (int x = 0; x<=arr[i]; x++){
+        for (int x = 0; x < arr[i]; x++){
             group->names[x] = malloc(sizeof(char) * 15);
             strcpy(group->names[x], "");
         }
     }
     
+    // fill the structure with all the data
     dir = opendir(directory);
     while ((file = readdir(dir)) != NULL) {
         if (file->d_type == DT_REG){ 
+            
             if (DEBUG){
                 printf("---------------\n");
                 printf("d_ino: %d\n", file->d_ino);
@@ -244,8 +235,8 @@ Database * openDB(char * directory){
                 continue;
             }
 
-            strokesGroup * head = &array->groups[strokes];
-            int length = arr[strokes];
+            strokesGroup * head = &array->groups[strokes-1];
+            int length = arr[strokes-1];
 
             addValue(wholeName, head->names, length);
             head->count++; 
@@ -257,35 +248,17 @@ Database * openDB(char * directory){
 }
 
 void closeDB(Database * files){
-    for (int i = 1; i <= MAX_STROKES; i++){
+
+    for (int i = 0; i < MAX_STROKES; i++){
+        
         strokesGroup * group = &files->groups[i];
-        for (int x = 0; x <= group->count; x++){
+        
+        for (int x = 0; x < group->count; x++){
             free(group->names[x]);
         }
+        
         free(group->names);
     }
+    
     free(files);
-}
-
-
-int main2(){
-
-    Database * files = openDB("../chars/");
-
-    printf("[*] Total strokes: %d\n", files->length);
-    for (int i = 1; i <= MAX_STROKES; i++){
-        printf("[*] %d stroke(s): %d characters\n", files->groups[i].strokes, files->groups[i].count);
-    }
-
-    for (int strokes = 1; strokes < 16; strokes++){
-
-        char ** strokeFiles = getStrokeFiles(strokes, files);
-
-        printArray(strokeFiles);
-        printf("Count: %d\n", files->groups[strokes].count);
-    }
-
-    closeDB(files);
-
-    return 1;
 }
