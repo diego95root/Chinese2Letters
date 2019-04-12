@@ -1,5 +1,4 @@
 #define MAX_STROKES 15 // remove from here
-#define DEBUG 0
 
 typedef struct strokesGroup {
     int strokes;

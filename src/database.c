@@ -184,18 +184,11 @@ Database * openDB(char * directory){
         exit(-1);
     }
 
-    if (DEBUG){
-        printf("[*] Number of files: %d\n", numFiles);
-    }
-
     array->length = numFiles;
 
 
     // allocate memory for each array and each string on it
     for (int i = 0; i < MAX_STROKES; i++){
-        if (DEBUG){
-            printf("Value at %d: %d\n", i, arr[i]);
-        }
 
         strokesGroup * group = &array->groups[i];
 
@@ -212,15 +205,6 @@ Database * openDB(char * directory){
     dir = opendir(directory);
     while ((file = readdir(dir)) != NULL) {
         if (file->d_type == DT_REG){ 
-            
-            if (DEBUG){
-                printf("---------------\n");
-                printf("d_ino: %d\n", file->d_ino);
-                printf("d_name: %s\n", file->d_name);
-                printf("d_off: %d\n", file->d_off);
-                printf("d_reclen: %d\n", file->d_reclen);
-                printf("d_type: %d\n", file->d_type);
-            }
 
             char wholeName[20];
             strcpy(wholeName, file->d_name);
