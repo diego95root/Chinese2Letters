@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <png.h>
 #include <string.h>
-#include "parser.h"
 #include "database.h"
+#include "parser.h"
 #include "algorithm.h"
 
 Database * files;
@@ -194,46 +194,3 @@ void sortListTest(double * list, int count){
         }
     } while (none != 0);
 }
-
-/*
-int main3(){
-
-    int width = 50;
-    int height = 50;
-
-    Database * files = openDB("../chars/");
-    
-    char filename[] = "../chars/5c55_10.png";
-
-    //maybe join them together to return a struct
-    char ** strokeFiles = getStrokeFiles(12, files);
-    int count = getNumberByStroke(12, files);
-    
-    charScore * valueChars = orderCompare(strokeFiles, filename, count);
-
-    charScore * sortedChars = sortList(valueChars, count);
-
-
-    for (int i = 0; i < count; i++){
-        printf("Name removed: %s (score %.2f)\n", sortedChars[i].name, sortedChars[i].score);
-        free(sortedChars[i].name);
-    }
-    free(sortedChars);
-
-    /*
-
-    int ** matrix = image2matrix(filename, width, height);
-    
-    writeMatrix(matrix, width, height);
-
-    for (int i = 0; i<width; i++){
-        free(matrix[i]);
-    }
-    free(matrix);
-    
-
-    closeDB(files);
-
-    return 1;
-}
-*/
