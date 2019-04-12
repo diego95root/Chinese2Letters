@@ -6,7 +6,43 @@
 
 int strokes = 0;
 
-uint8_t * datahex(char* string) {
+// Initialise all necessary things for the main window, including its size
+
+void initWindow(SDL_Window ** window, SDL_Renderer ** renderer, int width, int height){
+    
+    if (SDL_Init(SDL_INIT_VIDEO) < 0){
+
+        printf("SDL_Error: %s\n", SDL_GetError());
+
+    }
+
+    *window = SDL_CreateWindow("Chinese To Letters", SDL_WINDOWPOS_UNDEFINED, 
+        SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
+    
+    //SDL_SetWindowResizable(window, SDL_TRUE);
+
+    if (window == NULL){
+
+        printf("SDL_Error: %s\n", SDL_GetError());
+    }
+
+    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED); //renderer used to color rects
+    SDL_SetRenderDrawBlendMode(*renderer, SDL_BLENDMODE_BLEND);
+
+}
+
+// Free all elements created by the SDL library and quit the program
+
+void closeWindow(SDL_Window * window){
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
+
+// function that converts a hex string into a byte array
+// source: https://stackoverflow.com/questions/3408706/hexadecimal-string-to-byte-array-in-c
+
+uint8_t * hex2byteArray(char* string){
 
     if(string == NULL) 
        return NULL;
@@ -43,6 +79,8 @@ uint8_t * datahex(char* string) {
     return data;
 }
 
+// Creates and returns a rectangle based on the coordinates and size provided
+
 SDL_Rect * createPane(SDL_Renderer * renderer, int x, int y, int w, int h){
 
     SDL_Rect * pane = malloc(sizeof(SDL_Rect));
@@ -56,13 +94,20 @@ SDL_Rect * createPane(SDL_Renderer * renderer, int x, int y, int w, int h){
     return pane;
 }
 
+// Given an SDL_Event, return true if the mouse is within some coordinates (second pane)
+
 _Bool onSecondPane(SDL_Event event){
-    return event.motion.x > 540 && event.motion.x < 1040 && event.motion.y > 20 && event.motion.y < 520;
+    return event.motion.x > 540 && event.motion.x < 1040 
+            && event.motion.y > 20 && event.motion.y < 520;
 }
 
+// Same as the function above, but this one checks if in the first pane
+
 _Bool onFirstPane(SDL_Event event){
-    return event.motion.x < 520 && event.motion.x > 20 && event.motion.y < 520 && event.motion.y > 20;
+    return event.motion.x < 520 && event.motion.x > 20 
+            && event.motion.y < 520 && event.motion.y > 20;
 }
+
 
 void createDrawingPane(Database * db, SDL_Renderer * renderer){
     _Bool leftMouseButtonDown = 0;
@@ -143,7 +188,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
                             char message[7];
                             strncpy(message, valueChars->elements[y*7+x]->name, 6);
 
-                            uint8_t * data = datahex(message);
+                            uint8_t * data = hex2byteArray(message);
                             char final[4];
                             strncpy(final, data, 3);
 
@@ -254,7 +299,7 @@ void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length){
 
 SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, int * height){
 
-    char sourcePath[30] = "../chars3/";
+    char sourcePath[30] = "../chars3/"; // REMOVE THIS; PERFORM THE CONCAT BEFORE?
     strcat(sourcePath, source);
 
     SDL_Texture * img = IMG_LoadTexture(renderer, sourcePath);
@@ -262,43 +307,17 @@ SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, i
     return img;
 }
 
-void initWindow(SDL_Window ** window, SDL_Renderer ** renderer, int width, int height){
-    
-    if (SDL_Init(SDL_INIT_VIDEO) < 0){
 
-        printf("SDL_Error: %s\n", SDL_GetError());
+// From a sorted array of images and scores (charScore), return ordered array 
+// of SDL_textures
 
-    }
-
-    *window = SDL_CreateWindow("Chinese To Letters", SDL_WINDOWPOS_UNDEFINED, 
-        SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
-    
-    //SDL_SetWindowResizable(window, SDL_TRUE);
-
-    if (window == NULL){
-
-        printf("SDL_Error: %s\n", SDL_GetError());
-    }
-
-    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED); //renderer used to color rects
-    SDL_SetRenderDrawBlendMode(*renderer, SDL_BLENDMODE_BLEND);
-
-}
-
-void closeWindow(SDL_Window * window){
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
-/*
-
-From a sorted array of images and scores (charScore), return ordered array of SDL_textures
-
-*/
 
 SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore * charList, int count){
+
     SDL_Texture ** textureList = malloc(sizeof(SDL_Texture *) * count);
+    
     int w, h;
+    
     for (int i = 0; i < count; i++){
         textureList[i] = malloc(sizeof(textureList[0])); // SDL_Texture is opaque so bypass with pointer
         textureList[i] = createImage(renderer, charList[i].name, &w, &h);
@@ -307,7 +326,7 @@ SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore * charList, 
 }
 
 
-int maina(int argc, char* args[]){
+int main(int argc, char* args[]){
 
     SDL_Window   * window   = NULL;
     SDL_Renderer * renderer = NULL;

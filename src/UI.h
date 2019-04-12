@@ -1,3 +1,4 @@
+uint8_t * hex2byteArray(char* string);
 
 _Bool onFirstPane(SDL_Event event);
 _Bool onSecondPane(SDL_Event event);
