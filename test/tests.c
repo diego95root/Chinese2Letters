@@ -112,6 +112,9 @@ void test_ScoresSortedCorrectly(){
 }
 
 void test_comparisonReturnsCharacter(){
+
+    Database * db = parserGetDB("../chars3/");
+
     char * arr[] = {"e4bda0_07.png",  // `ni` character with a stroke that is not joint correctly (islands + 1)
                     "e68891_07.png",  // `wo` written incorrectly, with bad strokes 
                     "e69687_04.png",  
@@ -125,13 +128,13 @@ void test_comparisonReturnsCharacter(){
     
     size_t length = sizeof(arr) / sizeof(arr[0]);
 
-    for (int i = 0; i < length; i++){
+    for (int i = 0; i < 1; i++){
 
         char wholename[40] = "../test/dataImages/data-";
         strcat(wholename, arr[i]);
 
         int matrix[500][500];
-        readMatrix(wholename, matrix, 500, 500);
+        readMatrix(matrix, wholename);
 
         char name[20]; // need to copy the constant string out from RO memory
         strcpy(name, arr[i]);
@@ -142,12 +145,12 @@ void test_comparisonReturnsCharacter(){
         free(splitted[1]);
         free(splitted);
 
-        charScoreList * results = parserInit(strokes, matrix);
+        charScoreList * results = parserInit(db, strokes, matrix);
         
         printf("whole: %s, normal: %s, results: ", wholename, arr[i]);
 
         for (int j = 0; j < results->count; j++){
-            if (strcmp(results->elements[j].name, arr[i]) == 0){
+            if (strcmp(results->elements[j]->name, arr[i]) == 0){
                 printf("%d out of %d\n", j, results->count);
                 break;
             }
@@ -157,11 +160,14 @@ void test_comparisonReturnsCharacter(){
 
     }
 
-    parserEnd();
+    parserEnd(db);
 }
 
 int main(){
     UNITY_BEGIN();
+
+    // Should I test splitFilename?
+
     RUN_TEST(test_CountOfFilesWithNStrokes);
     RUN_TEST(test_filenamesByStrokeNumber);
     RUN_TEST(test_ScoresSortedCorrectly);

@@ -1,3 +1,5 @@
+#define ROWS 500
+#define COLS 500
 
 typedef struct charScore {
     double score;
@@ -5,18 +7,21 @@ typedef struct charScore {
 } charScore;
 
 typedef struct charScoreList {
-    charScore * elements;
+    charScore ** elements;
     int count;
 } charScoreList;
 
-void image2matrix(int matrix[500][500], char * name, int width, int height);
-void writeMatrix(int matrix[500][500], int width, int height);
-void readMatrix(char *filename, int matrix[500][500], int width, int height);
-charScoreList * orderCompare(char ** chars, int matrix[500][500], int count);
-void sortList(charScore * list, int count);
+void image2matrix(int matrix[ROWS][COLS], char * name);
+void writeMatrix(int matrix[ROWS][COLS], char * outName);
+void readMatrix(int matrix[ROWS][COLS], char *filename);
+
+void sortList(charScore ** list, int count);
 void sortListTest(double * list, int count);
 
-charScoreList * parserInit(int stroke, int matrix[500][500]);
+charScoreList * orderCompare(char ** chars, int matrix[ROWS][COLS], int count);
+charScoreList * parserInit(Database * files, int stroke, int matrix[ROWS][COLS]);
+
+Database * parserGetDB(char * path);
 
 void freeCharScoreList(charScoreList * list);
-void parserEnd();
+void parserEnd(Database * files);

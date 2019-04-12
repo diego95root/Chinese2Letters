@@ -64,7 +64,7 @@ _Bool onFirstPane(SDL_Event event){
     return event.motion.x < 520 && event.motion.x > 20 && event.motion.y < 520 && event.motion.y > 20;
 }
 
-void createDrawingPane(SDL_Renderer * renderer){
+void createDrawingPane(Database * db, SDL_Renderer * renderer){
     _Bool leftMouseButtonDown = 0;
     _Bool quit = 0;
     SDL_Event event;
@@ -77,8 +77,8 @@ void createDrawingPane(SDL_Renderer * renderer){
         }
     }
 
-    charScoreList * valueChars = parserInit(strokes, pixels);
-    SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+    charScoreList * valueChars = parserInit(db, strokes, pixels);
+    SDL_Texture ** images = charScore2texture(renderer, *valueChars->elements, valueChars->count);
 
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
 
@@ -121,8 +121,8 @@ void createDrawingPane(SDL_Renderer * renderer){
                         free(images);
                     }
 
-                    valueChars = parserInit(strokes, pixels);
-                    images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+                    valueChars = parserInit(db, strokes, pixels);
+                    images = charScore2texture(renderer, *valueChars->elements, valueChars->count);
 
                     gridAdd(renderer, images, valueChars->count);
 
@@ -141,7 +141,7 @@ void createDrawingPane(SDL_Renderer * renderer){
                         if ( y * 7 + x < valueChars->count){ // only copy if over image
 
                             char message[7];
-                            strncpy(message, valueChars->elements[y*7+x].name, 6);
+                            strncpy(message, valueChars->elements[y*7+x]->name, 6);
 
                             uint8_t * data = datahex(message);
                             char final[4];
@@ -205,7 +205,7 @@ void createDrawingPane(SDL_Renderer * renderer){
         free(pane2);
     }
 
-    writeMatrix(pixels, 500, 500);
+    writeMatrix(pixels, "data");
 
     freeCharScoreList(valueChars);
     for (int i = 0; i < valueChars->count; i++){
@@ -307,21 +307,23 @@ SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore * charList, 
 }
 
 
-int main(int argc, char* args[]){
+int maina(int argc, char* args[]){
 
     SDL_Window   * window   = NULL;
     SDL_Renderer * renderer = NULL;
     
     int width = 1060;
     int height = 540;
+
+    Database * db = parserGetDB("../chars3/");
     
     initWindow(&window, &renderer, width, height);
 
-    createDrawingPane(renderer);
+    createDrawingPane(db, renderer);
     
     closeWindow(window);
 
-    parserEnd();
+    parserEnd(db);
 
     return 0;
 }
