@@ -133,9 +133,11 @@ void readMatrix(int matrix[ROWS][COLS], char *filename){
 
 charScoreList * orderCompare(char ** chars, int compareTo[ROWS][COLS], int count){
     
-    charScoreList * scoreList = malloc(sizeof(charScoreList *) * count);
+    printf("Allocating charscorelist for %d elements...\n", count);
 
-    scoreList->elements = malloc(sizeof(charScore *) * count);
+    charScoreList * scoreList = malloc(sizeof(charScoreList *) + 8);
+
+    scoreList->elements = malloc(sizeof(charScore *) * (count * 2));
 
     scoreList->count = count;
 
@@ -183,6 +185,7 @@ void freeCharScoreList(charScoreList * list){
         free(list->elements[i]);
 
     }
+    
     free(list->elements);
     free(list);
 }

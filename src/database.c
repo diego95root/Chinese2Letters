@@ -92,7 +92,7 @@ char ** getStrokeFiles(int stroke, Database * files){
     if (stroke > MAX_STROKES || stroke == 0){ // empty array if stroke not valid
         
         char ** strokeFiles = malloc(sizeof(char *));
-        strokeFiles = malloc(sizeof(char));
+        strokeFiles[0] = malloc(sizeof(char)*2);
         strcpy(strokeFiles[0], "");
         return strokeFiles;
     

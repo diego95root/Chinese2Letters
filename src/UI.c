@@ -123,8 +123,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
     }
 
     charScoreList * valueChars = parserInit(db, strokes, pixels);
-    SDL_Texture ** images = charScore2texture(renderer, *valueChars->elements, valueChars->count);
-
+    SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, valueChars->count);
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
 
     while (!quit){
@@ -165,10 +164,8 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
                         }
                         free(images);
                     }
-
                     valueChars = parserInit(db, strokes, pixels);
-                    images = charScore2texture(renderer, *valueChars->elements, valueChars->count);
-
+                    images = charScore2texture(renderer, valueChars->elements, valueChars->count);
                     gridAdd(renderer, images, valueChars->count);
 
                     break;
@@ -312,15 +309,17 @@ SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, i
 // of SDL_textures
 
 
-SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore * charList, int count){
+SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList, int count){
 
     SDL_Texture ** textureList = malloc(sizeof(SDL_Texture *) * count);
     
     int w, h;
+
+    // seems as if only 1 alloc wtf
     
     for (int i = 0; i < count; i++){
         textureList[i] = malloc(sizeof(textureList[0])); // SDL_Texture is opaque so bypass with pointer
-        textureList[i] = createImage(renderer, charList[i].name, &w, &h);
+        textureList[i] = createImage(renderer, charList[i]->name, &w, &h);
     }
     return textureList;
 }
