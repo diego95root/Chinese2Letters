@@ -108,10 +108,10 @@ int find_islandsW(int matrix[ROWS][COLS]){
             is_visited[i][j] = 0;
  
     /*Search all the cells in matrix that are not yet visited*/
-    count = 0; // FIX THE FACT THAT TESTS DONT NEED THIS ONE AND THE MINUS BELOW BUT ACTUAL THING DOES WTFFF
+    count = 0;
     for (i = 0; i < ROWS; ++i) {
         for (j = 0; j < COLS; ++j) {
-            if (abs(matrix[i][j]) > 254 && !is_visited[i][j]) {
+            if (abs(matrix[i][j]) > 254 && !is_visited[i][j]) { // FIX THIS, it has to do with images having 255 as white and matrix -257
 
                 /*We have found an island. Now expand the island 
                 in all directions*/
@@ -185,7 +185,11 @@ void setCompareTo(int compareTo[500][500]){
     mainIslandsWhite = find_islandsW(compareTo);
     mainIslandsBlack = find_islandsB(compareTo);
 
-    printf("Islands: %d & %d\n", mainIslandsWhite, mainIslandsBlack);
+    //printf("Islands: %d & %d\n", mainIslandsWhite, mainIslandsBlack);
+
+
+    // idea for the arrays and the correlation taken from 
+    // https://stackoverflow.com/questions/22786288/ocr-and-character-similarity
 
     for (int i = 0; i < 500; i++) row_pixels[i] = 0; 
     for (int i = 0; i < 500; i++) col_pixels[i] = 0;
@@ -259,6 +263,7 @@ double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initF
 
     if (find_islandsW(matrix) != mainIslandsWhite || find_islandsB(matrix) != mainIslandsBlack){
         return 0;
+        // MAYBE INSTEAD OF 0 ADD A % of the difference
     }
 
     // sample
