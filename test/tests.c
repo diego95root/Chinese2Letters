@@ -128,7 +128,7 @@ void test_comparisonReturnsCharacter(){
     
     size_t length = sizeof(arr) / sizeof(arr[0]);
 
-    for (int i = 0; i < 1; i++){
+    for (int i = 0; i < length; i++){
 
         char wholename[40] = "../test/dataImages/data-";
         strcat(wholename, arr[i]);
@@ -147,11 +147,9 @@ void test_comparisonReturnsCharacter(){
 
         charScoreList * results = parserInit(db, strokes, matrix);
         
-        printf("whole: %s, normal: %s, results: ", wholename, arr[i]);
-
         for (int j = 0; j < results->count; j++){
             if (strcmp(results->elements[j]->name, arr[i]) == 0){
-                printf("%d out of %d\n", j, results->count);
+                TEST_ASSERT_INT_WITHIN(4, 0, j); // good result if within first 5 results
                 break;
             }
         }
