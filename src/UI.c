@@ -108,6 +108,18 @@ _Bool onFirstPane(SDL_Event event){
             && event.motion.y < 520 && event.motion.y > 20;
 }
 
+// draw a circle based on the circle's formula: (x - a)**2 + (y - b)**2 = r**2
+
+void drawCircle(int pixels[500][500], int x, int y, int radius){
+
+    for (int i = x - radius; i <= x + radius; i++){
+        for (int j = y - radius; j <= y + radius; j++){
+            if (pow(x-i, 2) + pow(y-j, 2) <= pow(radius, 2)){
+                pixels[j][i] = 0;
+            }
+        }    
+    }
+}
 
 void createDrawingPane(Database * db, SDL_Renderer * renderer){
     _Bool leftMouseButtonDown = 0;
@@ -208,15 +220,9 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
                     // free memory
                     // it stops painting when top left
 
-                    pixels[mouseY][mouseX] = 0;
+                    int radius = 14;
 
-                    int size = 20;
-
-                    for (int i = -size/2; i<=size/2; i++){ // come up with algo to draw circle
-                        for (int j = -size/2; j<=size/2; j++){
-                            pixels[mouseY+i][mouseX+j] = 0;
-                        }
-                    }
+                    drawCircle(pixels, mouseX, mouseY, radius);
                 
                 }
                 else if (onSecondPane(event)){
@@ -304,10 +310,8 @@ SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, i
     return img;
 }
 
-
 // From a sorted array of images and scores (charScore), return ordered array 
 // of SDL_textures
-
 
 SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList, int count){
 
@@ -323,7 +327,6 @@ SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList,
     }
     return textureList;
 }
-
 
 int main(int argc, char* args[]){
 
