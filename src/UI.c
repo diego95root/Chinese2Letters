@@ -142,6 +142,7 @@ void drawCircle(int pixels[500][500], int x, int y, int radius){
 void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int startY){
     _Bool leftMouseButtonDown = 0;
     _Bool quit = 0;
+    _Bool notPressed = 1;
     SDL_Event event;
 
     int pixels[500][500];
@@ -238,6 +239,25 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                     else if (onFirstPane(event, startX, startY)){
                         leftMouseButtonDown = 1;
                     }
+
+                    else if (onButtonsPane(event) && notPressed){
+
+                        int x = event.motion.x / 100;
+
+                        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 140);
+                        SDL_Rect rectangular;
+                        rectangular.x = 20 + x*100;
+                        rectangular.y = 20;
+                        rectangular.w = 80;
+                        rectangular.h = 40;
+                        SDL_RenderFillRect(renderer, &rectangular);
+
+                        notPressed = 0;
+                    }
+
+                    else {
+                        notPressed = 1;
+                    }
                 }
             
             case SDL_MOUSEMOTION:
@@ -246,7 +266,6 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                     int mouseX = event.motion.x - startX - 20;
                     int mouseY = event.motion.y - startY - 20;
                     
-                    // check segfaults when approach border quickly
                     // free memory
                     // it stops painting when top left
 
