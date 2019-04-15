@@ -189,7 +189,7 @@ void setCompareTo(int compareTo[500][500], int mode){
     
     }
     
-    if (mode == 2){
+    else if (mode == 2){
      
         mainIslandsWhite = find_islandsW(compareTo);
         mainIslandsBlack = find_islandsB(compareTo);
@@ -278,7 +278,7 @@ double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initF
         }
     }
 
-    if (mode == 2){
+    else if (mode == 2){
 
         //printf("- %d and %d\n", find_islandsW(matrix), find_islandsB(matrix));
 
