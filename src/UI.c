@@ -115,6 +115,15 @@ _Bool onFirstPane(SDL_Event event, int startX, int startY){
             && event.motion.y < startY + 520 && event.motion.y > startY + 20;
 }
 
+// return true if mouse is on a button from the top bar
+
+_Bool onButtonsPane(SDL_Event event){
+    _Bool goodY = event.motion.y > 20 && event.motion.y < 60;
+    _Bool goodX = event.motion.x > 20 && event.motion.x < 300;
+    _Bool notSpaceX = event.motion.x % 100 > 20;
+    return goodX && goodY && notSpaceX;
+}
+
 // draw a circle based on the circle's formula: (x - a)**2 + (y - b)**2 = r**2
 
 void drawCircle(int pixels[500][500], int x, int y, int radius){
@@ -165,6 +174,12 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
         gridAdd(renderer, images, valueChars->count, startX, startY);
 
         SDL_Rect * pane3 = createPane(renderer, 20, 20, 80, 40);
+        SDL_Rect * pane4 = createPane(renderer, 120, 20, 80, 40);
+        SDL_Rect * pane5 = createPane(renderer, 220, 20, 80, 40);
+
+        SDL_RenderCopy(renderer, tex, NULL, pane3);
+        SDL_RenderCopy(renderer, tex, NULL, pane4);
+        SDL_RenderCopy(renderer, tex, NULL, pane5); 
 
         SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
 
@@ -258,16 +273,29 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                     }
                 
                 }
+                else if (onButtonsPane(event)){
+
+                    int x = event.motion.x / 100;
+
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
+                    SDL_Rect rectangular;
+                    rectangular.x = 20 + x*100;
+                    rectangular.y = 20;
+                    rectangular.w = 80;
+                    rectangular.h = 40;
+                    SDL_RenderFillRect(renderer, &rectangular);
+                }
                 break;
         }
 
-        SDL_RenderCopy(renderer, tex, NULL, pane3); // draw the image to the window
         SDL_RenderCopy(renderer, texture, NULL, pane1);
         SDL_RenderPresent(renderer);
 
         free(pane1);
         free(pane2);
         free(pane3);
+        free(pane4);
+        free(pane5);
     }
 
     writeMatrix(pixels, "data");
