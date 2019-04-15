@@ -122,7 +122,9 @@ void drawCircle(int pixels[500][500], int x, int y, int radius){
     for (int i = x - radius; i <= x + radius; i++){
         for (int j = y - radius; j <= y + radius; j++){
             if (pow(x-i, 2) + pow(y-j, 2) <= pow(radius, 2)){
-                pixels[j][i] = 0;
+                if (j >= 0 && j < 500 && i >= 0 && j < 500){ // checks to prevent segfaults when drawing outside
+                    pixels[j][i] = 0;
+                }
             }
         }    
     }
