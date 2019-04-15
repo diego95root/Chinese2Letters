@@ -231,14 +231,15 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                     //printf("%d\n", strokes);
 
                     // Update in case of new stroke
-        
+                    printf("Shitty free!\n"); // PROBLEM WITH FREE HERE LOL
                     if (valueChars->count != 0){ // free if there were any elements
-                        freeCharScoreList(valueChars);
                         for (int i = 0; i < valueChars->count; i++){
                             free(images[i]);
                         }
                         free(images);
+                        freeCharScoreList(valueChars);
                     }
+                    printf("Not shitty free!\n");
                     valueChars = parserInit(db, strokes, pixels, mode);
                     images = charScore2texture(renderer, valueChars->elements, valueChars->count);
                     gridAdd(renderer, images, valueChars->count, startX, startY);
@@ -369,11 +370,11 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
     writeMatrix(pixels, "data");
 
-    freeCharScoreList(valueChars);
     for (int i = 0; i < valueChars->count; i++){
         free(images[i]);
     }
     free(images);
+    freeCharScoreList(valueChars);
 
     SDL_FreeSurface(image);
     SDL_FreeCursor(sdlMouseCursor);
