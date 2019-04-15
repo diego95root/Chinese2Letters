@@ -145,10 +145,11 @@ void test_comparisonReturnsCharacter(){
         free(splitted[1]);
         free(splitted);
 
-        charScoreList * results = parserInit(db, strokes, matrix);
+        charScoreList * results = parserInit(db, strokes, matrix, 2);
         
         for (int j = 0; j < results->count; j++){
             if (strcmp(results->elements[j]->name, arr[i]) == 0){
+                printf("%d out of %d\n", j, results->count);
                 TEST_ASSERT_INT_WITHIN(4, 0, j); // good result if within first 5 results
                 break;
             }

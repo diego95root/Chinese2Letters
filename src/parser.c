@@ -27,7 +27,7 @@ void parserEnd(Database * files){
 // (chinese characters and their index of similarity) in a structure 
 // called charScoreList
 
-charScoreList * parserInit(Database * files, int stroke, int matrix[ROWS][COLS]){
+charScoreList * parserInit(Database * files, int stroke, int matrix[ROWS][COLS], int mode){
     
     char ** strokeFiles = getStrokeFiles(stroke, files);
     int count = getNumberByStroke(stroke, files);
@@ -35,12 +35,12 @@ charScoreList * parserInit(Database * files, int stroke, int matrix[ROWS][COLS])
     charScoreList * valueChars;
 
     if (count == -1){
-        valueChars = orderCompare(strokeFiles, matrix, 0);
+        valueChars = orderCompare(strokeFiles, matrix, 0, mode);
         free(strokeFiles[0]);
         free(strokeFiles);
     }
     else {
-        valueChars = orderCompare(strokeFiles, matrix, count);
+        valueChars = orderCompare(strokeFiles, matrix, count, mode);
     }
 
     return valueChars;
@@ -131,21 +131,15 @@ void readMatrix(int matrix[ROWS][COLS], char *filename){
 // image in the file to the matrix (drawn by the user). The structure
 // contains the results in sorted order (highest similarity to lowest).
 
-charScoreList * orderCompare(char ** chars, int compareTo[ROWS][COLS], int count){
+charScoreList * orderCompare(char ** chars, int compareTo[ROWS][COLS], int count, int mode){
     
-    printf("Allocating charscorelist for %d elements...\n", count);
+    charScoreList * scoreList = malloc(sizeof(charScoreList *) * count + 80);
 
-    charScoreList * scoreList = malloc(sizeof(charScoreList *) + 8);
-
-    scoreList->elements = malloc(sizeof(charScore *) * (count * 2));
+    scoreList->elements = malloc(sizeof(charScore *) * count * 20);
 
     scoreList->count = count;
 
     for (int i = 0; i < count; i++){
-
-        if (strcmp(chars[i], "") == 0){
-            break;
-        }
 
         scoreList->elements[i] = malloc(sizeof(charScore *) + sizeof(char *));
 
@@ -163,7 +157,7 @@ charScoreList * orderCompare(char ** chars, int compareTo[ROWS][COLS], int count
         // the last parameter indicates if new set of strokes to
         // recalculate the data from the drawing pane
 
-        double score = compareAlgorithm(compareTo, matrix, (i == 0));
+        double score = compareAlgorithm(compareTo, matrix, (i == 0), mode);
 
         //printf("%f for %s\n", score, sourcePath);        
 

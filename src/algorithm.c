@@ -5,6 +5,7 @@
 
 int mainIslandsWhite;
 int mainIslandsBlack;
+int initMode;
 
 int row_pixels[500]; 
 int col_pixels[500]; 
@@ -180,11 +181,20 @@ double correlationCoefficient(int X[500], int Y[500], int n) {
     return corr; 
 } 
 
-void setCompareTo(int compareTo[500][500]){
+void setCompareTo(int compareTo[500][500], int mode){
 
-    mainIslandsWhite = find_islandsW(compareTo);
-    mainIslandsBlack = find_islandsB(compareTo);
+    if (mode == 1){
 
+        mainIslandsBlack = find_islandsB(compareTo);
+    
+    }
+    
+    if (mode == 2){
+     
+        mainIslandsWhite = find_islandsW(compareTo);
+        mainIslandsBlack = find_islandsB(compareTo);
+
+    }
     //printf("Islands: %d & %d\n", mainIslandsWhite, mainIslandsBlack);
 
 
@@ -248,25 +258,35 @@ void setCompareTo(int compareTo[500][500]){
 
 }
 
-double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initFlag){
+double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initFlag, int mode){
 
     // To improve efficiency calculations on compareTo should only be done once,
     // as they are expensive and all the matrices are being compared to the same.
     // if flag then calculate compareTo for all the rest of the set
+    
+    if (initFlag || mode != initMode){
 
-    if (initFlag){
-        setCompareTo(compareTo);
+        setCompareTo(compareTo, mode);
+        initMode = mode;
         //printf("New set! Calculations are: %d and %d\n", mainIslandsWhite, mainIslandsBlack);
     }
 
-    //printf("- %d and %d\n", find_islandsW(matrix), find_islandsB(matrix));
+    if (mode == 1){
 
-    if (find_islandsW(matrix) != mainIslandsWhite || find_islandsB(matrix) != mainIslandsBlack){
-        return 0;
-        // MAYBE INSTEAD OF 0 ADD A % of the difference
+        if (find_islandsB(matrix) != mainIslandsBlack){
+            return 0;
+        }
     }
 
-    // sample
+    if (mode == 2){
+
+        //printf("- %d and %d\n", find_islandsW(matrix), find_islandsB(matrix));
+
+        if (find_islandsW(matrix) != mainIslandsWhite || find_islandsB(matrix) != mainIslandsBlack){
+            return 0;
+            // MAYBE INSTEAD OF 0 ADD A % of the difference
+        }
+    }
 
     int row_pixels2[500] = {0}; 
     int col_pixels2[500] = {0}; 

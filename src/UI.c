@@ -8,7 +8,7 @@ int strokes = 0;
 
 // Initialise all necessary things for the main window, including its size
 
-void initWindow(SDL_Window ** window, SDL_Renderer ** renderer, int width, int height){
+void initWindow(SDL_Window * window, SDL_Renderer ** renderer, int width, int height){
     
     if (SDL_Init(SDL_INIT_VIDEO) < 0){
 
@@ -16,7 +16,7 @@ void initWindow(SDL_Window ** window, SDL_Renderer ** renderer, int width, int h
 
     }
 
-    *window = SDL_CreateWindow("Chinese To Letters", SDL_WINDOWPOS_UNDEFINED, 
+    window = SDL_CreateWindow("Chinese To Letters", SDL_WINDOWPOS_UNDEFINED, 
         SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
     
     //SDL_SetWindowResizable(window, SDL_TRUE);
@@ -33,15 +33,14 @@ void initWindow(SDL_Window ** window, SDL_Renderer ** renderer, int width, int h
         printf("Images couldn't be loaded, %s!\n", IMG_GetError()); 
     }
 
-    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED); //renderer used to color rects
+    *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED); //renderer used to color rects
     SDL_SetRenderDrawBlendMode(*renderer, SDL_BLENDMODE_BLEND);
 
 }
 
 // Free all elements created by the SDL library and quit the program
 
-void closeWindow(SDL_Window * window, SDL_Renderer * renderer){
-    SDL_DestroyRenderer(renderer);
+void closeWindow(SDL_Window * window){
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
@@ -149,6 +148,8 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     _Bool activeTwo = 0;
     _Bool activeThree = 0;
 
+    int mode = 0;
+
     // ADD SOMETHING SO THAT NOT EVERYHTING AGAIN ON EACH ITERATION
 
     SDL_Event event;
@@ -165,7 +166,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
         }
     }
 
-    charScoreList * valueChars = parserInit(db, strokes, pixels);
+    charScoreList * valueChars = parserInit(db, strokes, pixels, mode);
     SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, valueChars->count);
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
 
@@ -195,16 +196,19 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
         SDL_Rect * pane5 = createPane(renderer, 220, 20, 80, 40);
 
         if (activeOne){
+            mode = 0;
             SDL_RenderCopy(renderer, tex2, NULL, pane3);
             SDL_RenderCopy(renderer, tex, NULL, pane4);
             SDL_RenderCopy(renderer, tex, NULL, pane5); 
         }
         else if (activeTwo) {
+            mode = 1;
             SDL_RenderCopy(renderer, tex, NULL, pane3);
             SDL_RenderCopy(renderer, tex2, NULL, pane4);
             SDL_RenderCopy(renderer, tex, NULL, pane5); 
         }
         else {
+            mode = 2;
             SDL_RenderCopy(renderer, tex, NULL, pane3);
             SDL_RenderCopy(renderer, tex, NULL, pane4);
             SDL_RenderCopy(renderer, tex2, NULL, pane5); 
@@ -235,7 +239,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                         }
                         free(images);
                     }
-                    valueChars = parserInit(db, strokes, pixels);
+                    valueChars = parserInit(db, strokes, pixels, mode);
                     images = charScore2texture(renderer, valueChars->elements, valueChars->count);
                     gridAdd(renderer, images, valueChars->count, startX, startY);
 
@@ -374,10 +378,6 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     SDL_FreeSurface(image);
     SDL_FreeCursor(sdlMouseCursor);
     SDL_FreeCursor(initialCursor);
-    SDL_DestroyTexture(*images);
-    SDL_DestroyTexture(texture);
-    SDL_DestroyTexture(tex);
-    SDL_DestroyTexture(tex2);
 }
 
 void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int startX, int startY){
@@ -455,11 +455,11 @@ int main(int argc, char* args[]){
 
     Database * db = parserGetDB("../chars3/");
 
-    initWindow(&window, &renderer, width, height);
+    initWindow(window, &renderer, width, height);
 
     createDrawingPane(db, renderer, 0, 60);
-    
-    closeWindow(window, renderer);
+
+    closeWindow(window);
 
     parserEnd(db);
 

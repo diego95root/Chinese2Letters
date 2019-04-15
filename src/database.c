@@ -108,7 +108,7 @@ char ** getStrokeFiles(int stroke, Database * files){
 
 int getNumberByStroke(int stroke, Database * files){
     
-    if (stroke > MAX_STROKES || stroke == 0){
+    if (stroke > MAX_STROKES || stroke <= 0){
         return -1;
     }
 

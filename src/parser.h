@@ -18,8 +18,8 @@ void readMatrix(int matrix[ROWS][COLS], char *filename);
 void sortList(charScore ** list, int count);
 void sortListTest(double * list, int count);
 
-charScoreList * orderCompare(char ** chars, int matrix[ROWS][COLS], int count);
-charScoreList * parserInit(Database * files, int stroke, int matrix[ROWS][COLS]);
+charScoreList * orderCompare(char ** chars, int matrix[ROWS][COLS], int count, int mode);
+charScoreList * parserInit(Database * files, int stroke, int matrix[ROWS][COLS], int mode);
 
 Database * parserGetDB(char * path);
 
