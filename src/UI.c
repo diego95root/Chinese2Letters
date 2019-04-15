@@ -26,6 +26,13 @@ void initWindow(SDL_Window ** window, SDL_Renderer ** renderer, int width, int h
         printf("SDL_Error: %s\n", SDL_GetError());
     }
 
+    int flags = IMG_INIT_PNG;
+    int init = IMG_Init(flags);
+    
+    if(!(init & flags)) {
+        printf("Images couldn't be loaded, %s!\n", IMG_GetError()); 
+    }
+
     *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED); //renderer used to color rects
     SDL_SetRenderDrawBlendMode(*renderer, SDL_BLENDMODE_BLEND);
 
@@ -96,16 +103,16 @@ SDL_Rect * createPane(SDL_Renderer * renderer, int x, int y, int w, int h){
 
 // Given an SDL_Event, return true if the mouse is within some coordinates (second pane)
 
-_Bool onSecondPane(SDL_Event event){
-    return event.motion.x > 540 && event.motion.x < 1040 
-            && event.motion.y > 20 && event.motion.y < 520;
+_Bool onSecondPane(SDL_Event event, int startX, int startY){
+    return event.motion.x > startX + 540 && event.motion.x < startX + 1040 
+            && event.motion.y > startY + 20 && event.motion.y < startY + 520;
 }
 
 // Same as the function above, but this one checks if in the first pane
 
-_Bool onFirstPane(SDL_Event event){
-    return event.motion.x < 520 && event.motion.x > 20 
-            && event.motion.y < 520 && event.motion.y > 20;
+_Bool onFirstPane(SDL_Event event, int startX, int startY){
+    return event.motion.x < startX + 520 && event.motion.x > startX + 20 
+            && event.motion.y < startY + 520 && event.motion.y > startY + 20;
 }
 
 // draw a circle based on the circle's formula: (x - a)**2 + (y - b)**2 = r**2
@@ -121,7 +128,7 @@ void drawCircle(int pixels[500][500], int x, int y, int radius){
     }
 }
 
-void createDrawingPane(Database * db, SDL_Renderer * renderer){
+void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int startY){
     _Bool leftMouseButtonDown = 0;
     _Bool quit = 0;
     SDL_Event event;
@@ -144,12 +151,21 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
         SDL_RenderClear(renderer);
 
         SDL_SetRenderDrawColor(renderer, 255, 102, 100, 255);
-        SDL_Rect * pane1 = createPane(renderer, 20, 20, 500, 500);
+        SDL_Rect * pane1 = createPane(renderer, startX + 20, startY + 20, 500, 500);
 
         SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
-        SDL_Rect * pane2 = createPane(renderer, 540, 20, 500, 500);
+        SDL_Rect * pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
 
-        gridAdd(renderer, images, valueChars->count);
+        gridAdd(renderer, images, valueChars->count, startX, startY);
+
+        /*
+        SDL_Surface* loadedSurface = IMG_Load("../button.png");
+        SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+        SDL_FreeSurface(loadedSurface);
+
+        SDL_RenderCopy(renderer, tex, NULL, NULL); // draw the image to the window
+        SDL_RenderPresent(renderer);
+        */
 
         SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
 
@@ -162,7 +178,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
                 break;
             
             case SDL_MOUSEBUTTONUP:
-                if (event.button.button == SDL_BUTTON_LEFT && onFirstPane(event)){
+                if (event.button.button == SDL_BUTTON_LEFT && onFirstPane(event, startX, startY)){
                     leftMouseButtonDown = 0;
                     strokes++;
                     //printf("%d\n", strokes);
@@ -178,7 +194,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
                     }
                     valueChars = parserInit(db, strokes, pixels);
                     images = charScore2texture(renderer, valueChars->elements, valueChars->count);
-                    gridAdd(renderer, images, valueChars->count);
+                    gridAdd(renderer, images, valueChars->count, startX, startY);
 
                     break;
                 }
@@ -187,7 +203,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
                 
                 if (event.button.button == SDL_BUTTON_LEFT){
                     
-                    if (onSecondPane(event)){
+                    if (onSecondPane(event, startX, startY)){
                         
                         int x = round((event.motion.x - 547)/70);
                         int y = round((event.motion.y - 27)/70);
@@ -205,16 +221,16 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
                             SDL_SetClipboardText(final);
                         }
                     }
-                    else if (onFirstPane(event)){
+                    else if (onFirstPane(event, startX, startY)){
                         leftMouseButtonDown = 1;
                     }
                 }
             
             case SDL_MOUSEMOTION:
-                if (onFirstPane(event) && leftMouseButtonDown){
+                if (onFirstPane(event, startX, startY) && leftMouseButtonDown){
 
-                    int mouseX = event.motion.x - 20;
-                    int mouseY = event.motion.y - 20;
+                    int mouseX = event.motion.x - startX - 20;
+                    int mouseY = event.motion.y - startY - 20;
                     
                     // check segfaults when approach border quickly
                     // free memory
@@ -225,17 +241,17 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
                     drawCircle(pixels, mouseX, mouseY, radius);
                 
                 }
-                else if (onSecondPane(event)){
+                else if (onSecondPane(event, startX, startY)){
 
-                    int x = round((event.motion.x - 547)/70);
-                    int y = round((event.motion.y - 27)/70);
+                    int x = round((event.motion.x - startX - 547)/70);
+                    int y = round((event.motion.y - startY - 27)/70);
 
                     if ( y * 7 + x < valueChars->count){ // only color if over image
 
                         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
                         SDL_Rect rectangular;
-                        rectangular.x = 540 + 7 + x*70;
-                        rectangular.y = 27 + y*70;
+                        rectangular.x = startX + 540 + 7 + x*70;
+                        rectangular.y = startY + 27 + y*70;
                         rectangular.w = 65;
                         rectangular.h = 65;
                         SDL_RenderFillRect(renderer, &rectangular);
@@ -263,7 +279,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer){
     SDL_DestroyTexture(texture);
 }
 
-void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length){
+void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int startX, int startY){
     
     if (length > 49){
         length = 49;
@@ -278,8 +294,8 @@ void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length){
     for (i = 0; i < x; i++){
         for (int j = 0; j < 7; j++){
             SDL_Rect rectangular;
-            rectangular.x = 540 + 7 + j*70;
-            rectangular.y = 27 + i*70;
+            rectangular.x = startX + 540 + 7 + j*70;
+            rectangular.y = startY + 27 + i*70;
             rectangular.w = 65;
             rectangular.h = 65;
             SDL_RenderCopy(renderer, images[count], NULL, &rectangular);
@@ -290,8 +306,8 @@ void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length){
     if (y != 0){
         for (int j = 0; j < y; j++){
             SDL_Rect rectangular;
-            rectangular.x = 540 + 7 + j*70;
-            rectangular.y = 27 + i*70;
+            rectangular.x = startX + 540 + 7 + j*70;
+            rectangular.y = startY + 27 + i*70;
             rectangular.w = 65;
             rectangular.h = 65;
             SDL_RenderCopy(renderer, images[count], NULL, &rectangular);
@@ -334,13 +350,13 @@ int main(int argc, char* args[]){
     SDL_Renderer * renderer = NULL;
     
     int width = 1060;
-    int height = 540;
+    int height = 600; // 540 + 60 for above bar
 
     Database * db = parserGetDB("../chars3/");
     
     initWindow(&window, &renderer, width, height);
 
-    createDrawingPane(db, renderer);
+    createDrawingPane(db, renderer, 0, 60);
     
     closeWindow(window);
 
