@@ -4,7 +4,7 @@ _Bool onFirstPane(SDL_Event event, int startX, int startY);
 _Bool onSecondPane(SDL_Event event, int startX, int startY);
 
 void initWindow(SDL_Window ** window, SDL_Renderer ** renderer, int width, int height);
-void closeWindow(SDL_Window * window);
+void closeWindow(SDL_Window * window, SDL_Renderer * renderer);
 void createDrawingPane(Database * files, SDL_Renderer * renderer, int startX, int startY);
 void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int startX, int startY);
 

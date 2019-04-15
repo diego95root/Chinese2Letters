@@ -40,7 +40,8 @@ void initWindow(SDL_Window ** window, SDL_Renderer ** renderer, int width, int h
 
 // Free all elements created by the SDL library and quit the program
 
-void closeWindow(SDL_Window * window){
+void closeWindow(SDL_Window * window, SDL_Renderer * renderer){
+    SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
@@ -148,7 +149,13 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     _Bool activeTwo = 0;
     _Bool activeThree = 0;
 
+    // ADD SOMETHING SO THAT NOT EVERYHTING AGAIN ON EACH ITERATION
+
     SDL_Event event;
+
+    SDL_Cursor * initialCursor = SDL_GetCursor();
+    SDL_Surface * image = IMG_Load("../mouse.png");
+    SDL_Cursor * sdlMouseCursor = SDL_CreateColorCursor(image, 14, 8);
 
     int pixels[500][500];
     
@@ -168,7 +175,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
     SDL_Surface* loadedSurface2 = IMG_Load("../button2.png");
     SDL_Texture* tex2 = SDL_CreateTextureFromSurface(renderer, loadedSurface2);
-    SDL_FreeSurface(loadedSurface);
+    SDL_FreeSurface(loadedSurface2);
 
     while (!quit){
 
@@ -325,10 +332,24 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                         rectangular.w = 65;
                         rectangular.h = 65;
                         SDL_RenderFillRect(renderer, &rectangular);
-                    
+
+                        SDL_SetCursor(sdlMouseCursor);
+                    }
+
+                    else {
+                        SDL_SetCursor(initialCursor);
                     }
                 
                 }
+
+                else if (onButtonsPane(event)){
+                    SDL_SetCursor(sdlMouseCursor);
+                }
+
+                else {
+                    SDL_SetCursor(initialCursor);
+                }
+
                 break;
         }
 
@@ -349,7 +370,14 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
         free(images[i]);
     }
     free(images);
+
+    SDL_FreeSurface(image);
+    SDL_FreeCursor(sdlMouseCursor);
+    SDL_FreeCursor(initialCursor);
+    SDL_DestroyTexture(*images);
     SDL_DestroyTexture(texture);
+    SDL_DestroyTexture(tex);
+    SDL_DestroyTexture(tex2);
 }
 
 void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int startX, int startY){
@@ -426,12 +454,12 @@ int main(int argc, char* args[]){
     int height = 600; // 540 + 60 for above bar
 
     Database * db = parserGetDB("../chars3/");
-    
+
     initWindow(&window, &renderer, width, height);
 
     createDrawingPane(db, renderer, 0, 60);
     
-    closeWindow(window);
+    closeWindow(window, renderer);
 
     parserEnd(db);
 
