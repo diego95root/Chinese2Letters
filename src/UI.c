@@ -145,6 +145,10 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, valueChars->count);
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
 
+    SDL_Surface* loadedSurface = IMG_Load("../button.png");
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+    SDL_FreeSurface(loadedSurface);
+
     while (!quit){
 
         SDL_SetRenderDrawColor(renderer, 51, 102, 153, 255);
@@ -158,14 +162,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
         gridAdd(renderer, images, valueChars->count, startX, startY);
 
-        /*
-        SDL_Surface* loadedSurface = IMG_Load("../button.png");
-        SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, loadedSurface);
-        SDL_FreeSurface(loadedSurface);
-
-        SDL_RenderCopy(renderer, tex, NULL, NULL); // draw the image to the window
-        SDL_RenderPresent(renderer);
-        */
+        SDL_Rect * pane3 = createPane(renderer, 20, 20, 80, 40);
 
         SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
 
@@ -262,11 +259,13 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                 break;
         }
 
+        SDL_RenderCopy(renderer, tex, NULL, pane3); // draw the image to the window
         SDL_RenderCopy(renderer, texture, NULL, pane1);
         SDL_RenderPresent(renderer);
 
         free(pane1);
         free(pane2);
+        free(pane3);
     }
 
     writeMatrix(pixels, "data");
