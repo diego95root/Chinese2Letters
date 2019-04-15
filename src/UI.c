@@ -143,6 +143,11 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     _Bool leftMouseButtonDown = 0;
     _Bool quit = 0;
     _Bool notPressed = 1;
+
+    _Bool activeOne = 1;
+    _Bool activeTwo = 0;
+    _Bool activeThree = 0;
+
     SDL_Event event;
 
     int pixels[500][500];
@@ -159,6 +164,10 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
     SDL_Surface* loadedSurface = IMG_Load("../button.png");
     SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+    SDL_FreeSurface(loadedSurface);
+
+    SDL_Surface* loadedSurface2 = IMG_Load("../button2.png");
+    SDL_Texture* tex2 = SDL_CreateTextureFromSurface(renderer, loadedSurface2);
     SDL_FreeSurface(loadedSurface);
 
     while (!quit){
@@ -178,9 +187,21 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
         SDL_Rect * pane4 = createPane(renderer, 120, 20, 80, 40);
         SDL_Rect * pane5 = createPane(renderer, 220, 20, 80, 40);
 
-        SDL_RenderCopy(renderer, tex, NULL, pane3);
-        SDL_RenderCopy(renderer, tex, NULL, pane4);
-        SDL_RenderCopy(renderer, tex, NULL, pane5); 
+        if (activeOne){
+            SDL_RenderCopy(renderer, tex2, NULL, pane3);
+            SDL_RenderCopy(renderer, tex, NULL, pane4);
+            SDL_RenderCopy(renderer, tex, NULL, pane5); 
+        }
+        else if (activeTwo) {
+            SDL_RenderCopy(renderer, tex, NULL, pane3);
+            SDL_RenderCopy(renderer, tex2, NULL, pane4);
+            SDL_RenderCopy(renderer, tex, NULL, pane5); 
+        }
+        else {
+            SDL_RenderCopy(renderer, tex, NULL, pane3);
+            SDL_RenderCopy(renderer, tex, NULL, pane4);
+            SDL_RenderCopy(renderer, tex2, NULL, pane5); 
+        }
 
         SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
 
@@ -253,6 +274,22 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                         SDL_RenderFillRect(renderer, &rectangular);
 
                         notPressed = 0;
+
+                        if (x == 0){
+                            activeOne = 1;
+                            activeTwo = 0;
+                            activeThree = 0;
+                        }
+                        else if (x == 1){
+                            activeOne = 0;
+                            activeTwo = 1;
+                            activeThree = 0;
+                        }
+                        else if (x == 2){
+                            activeOne = 0;
+                            activeTwo = 0;
+                            activeThree = 1;
+                        }
                     }
 
                     else {
@@ -291,18 +328,6 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                     
                     }
                 
-                }
-                else if (onButtonsPane(event)){
-
-                    int x = event.motion.x / 100;
-
-                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
-                    SDL_Rect rectangular;
-                    rectangular.x = 20 + x*100;
-                    rectangular.y = 20;
-                    rectangular.w = 80;
-                    rectangular.h = 40;
-                    SDL_RenderFillRect(renderer, &rectangular);
                 }
                 break;
         }
