@@ -454,7 +454,7 @@ SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList,
     return textureList;
 }
 
-int main(int argc, char* args[]){
+int maina(int argc, char* args[]){
 
     SDL_Window   * window   = NULL;
     SDL_Renderer * renderer = NULL;

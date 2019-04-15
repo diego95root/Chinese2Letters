@@ -272,19 +272,29 @@ double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initF
     }
 
     if (mode == 1){
+        
+        int blacks = find_islandsB(matrix);
 
-        if (find_islandsB(matrix) != mainIslandsBlack){
-            return 0;
+        if (blacks != mainIslandsBlack){
+
+            // return difference so that results with more different
+            // islands have lower scores than those that differ by 
+            // one or two
+
+            return 0.2 - 0.01 * abs(blacks-mainIslandsBlack);
         }
     }
 
     else if (mode == 2){
 
-        //printf("- %d and %d\n", find_islandsW(matrix), find_islandsB(matrix));
+        int blacks = find_islandsB(matrix);
+        int whites = find_islandsW(matrix);
 
-        if (find_islandsW(matrix) != mainIslandsWhite || find_islandsB(matrix) != mainIslandsBlack){
-            return 0;
-            // MAYBE INSTEAD OF 0 ADD A % of the difference
+        // same as above but with both blacks and whites
+
+        if (whites != mainIslandsWhite || blacks != mainIslandsBlack){
+            return 0.2 - 0.01 * (abs(blacks-mainIslandsBlack) 
+                                + abs(whites-mainIslandsWhite));
         }
     }
 
