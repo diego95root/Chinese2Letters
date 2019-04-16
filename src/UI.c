@@ -161,10 +161,15 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     _Bool activeOne = 1;
     _Bool activeTwo = 0;
     _Bool activeThree = 0;
+    _Bool modiefiedButtons = 1;
 
     int mode = 0;
 
     // ADD SOMETHING SO THAT NOT EVERYHTING AGAIN ON EACH ITERATION
+
+    // ADD A FLAG FOR BUTTONS CHANGES
+
+    // FUNCTION TO DRAW BLACK RECTANGLES
 
     SDL_Event event;
 
@@ -193,47 +198,50 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
     SDL_Texture * clearImg = loadImage(renderer, "../images/clear.png");
 
+    SDL_SetRenderDrawColor(renderer, 51, 102, 153, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderDrawColor(renderer, 255, 102, 100, 255);
+    SDL_Rect * pane1 = createPane(renderer, startX + 20, startY + 20, 500, 500);
+
+    SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
+    SDL_Rect * pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
+
+    SDL_Rect * pane3 = createPane(renderer, 20, 20, 130, 40);
+    SDL_Rect * pane4 = createPane(renderer, 170, 20, 130, 40);
+    SDL_Rect * pane5 = createPane(renderer, 320, 20, 130, 40);
+    SDL_Rect * pane6 = createPane(renderer, 910, 20, 130, 40);
+
     while (!quit){
 
-        SDL_SetRenderDrawColor(renderer, 51, 102, 153, 255);
-        SDL_RenderClear(renderer);
-
-        SDL_SetRenderDrawColor(renderer, 255, 102, 100, 255);
-        SDL_Rect * pane1 = createPane(renderer, startX + 20, startY + 20, 500, 500);
-
-        SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
-        SDL_Rect * pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
+        // ADD FLAG AS WELL FOR GRID ADD; ONLY IF CHANGED
 
         gridAdd(renderer, images, valueChars->count, startX, startY);
-
-        SDL_Rect * pane3 = createPane(renderer, 20, 20, 130, 40);
-        SDL_Rect * pane4 = createPane(renderer, 170, 20, 130, 40);
-        SDL_Rect * pane5 = createPane(renderer, 320, 20, 130, 40);
-
-        SDL_Rect * pane6 = createPane(renderer, 910, 20, 130, 40);
-
-        if (activeOne){
-            mode = 0;
-            SDL_RenderCopy(renderer, m1b, NULL, pane3);
-            SDL_RenderCopy(renderer, m2, NULL, pane4);
-            SDL_RenderCopy(renderer, m3, NULL, pane5); 
-        }
-        else if (activeTwo) {
-            mode = 1;
-            SDL_RenderCopy(renderer, m1, NULL, pane3);
-            SDL_RenderCopy(renderer, m2b, NULL, pane4);
-            SDL_RenderCopy(renderer, m3, NULL, pane5); 
-        }
-        else {
-            mode = 2;
-            SDL_RenderCopy(renderer, m1, NULL, pane3);
-            SDL_RenderCopy(renderer, m2, NULL, pane4);
-            SDL_RenderCopy(renderer, m3b, NULL, pane5); 
-        }
-
-        SDL_RenderCopy(renderer, clearImg, NULL, pane6);
-
+        
         SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
+
+        if (modiefiedButtons){
+            if (activeOne){
+                mode = 0;
+                SDL_RenderCopy(renderer, m1b, NULL, pane3);
+                SDL_RenderCopy(renderer, m2, NULL, pane4);
+                SDL_RenderCopy(renderer, m3, NULL, pane5); 
+            }
+            else if (activeTwo) {
+                mode = 1;
+                SDL_RenderCopy(renderer, m1, NULL, pane3);
+                SDL_RenderCopy(renderer, m2b, NULL, pane4);
+                SDL_RenderCopy(renderer, m3, NULL, pane5); 
+            }
+            else {
+                mode = 2;
+                SDL_RenderCopy(renderer, m1, NULL, pane3);
+                SDL_RenderCopy(renderer, m2, NULL, pane4);
+                SDL_RenderCopy(renderer, m3b, NULL, pane5); 
+            }
+            SDL_RenderCopy(renderer, clearImg, NULL, pane6);
+            modiefiedButtons = 0;
+        }
 
         SDL_WaitEvent(&event);
 
@@ -245,18 +253,21 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
             
             case SDL_MOUSEBUTTONUP:
                 if (event.button.button == SDL_BUTTON_LEFT && onFirstPane(event, startX, startY)){
+                    
                     leftMouseButtonDown = 0;
                     strokes++;
-                    //printf("%d\n", strokes);
 
-                    // Update in case of new stroke
-                    if (valueChars->count != 0){ // free if there were any elements
+                    // Update in case of new stroke by freeing previous elements first
+
+                    if (valueChars->count != 0){
                         for (int i = 0; i < valueChars->count; i++){
                             SDL_DestroyTexture(images[i]);
                         }
                         free(images);
                         freeCharScoreList(valueChars);
                     }
+
+                    // get new elements
 
                     valueChars = parserInit(db, strokes, pixels, mode);
                     images = charScore2texture(renderer, valueChars->elements, valueChars->count);
@@ -276,32 +287,47 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                         
                         if ( y * 7 + x < valueChars->count){ // only copy if over image
 
+                            // Copy name to array of chars
+
                             char message[7];
                             strncpy(message, valueChars->elements[y*7+x]->name, 6);
 
+                            // Convert char array to a byte array
+
                             uint8_t * data = hex2byteArray(message);
+
+                            // Convert pointer to string in order to copy to clipboard
+
                             char final[4];
                             strncpy(final, data, 3);
 
-                            //printf("%s\n", final);
                             SDL_SetClipboardText(final);
                         }
                     }
+
                     else if (onFirstPane(event, startX, startY)){
-                        leftMouseButtonDown = 1;
+
+                        // Flag to know if we can draw 
+
+                        leftMouseButtonDown = 1;                        
+                    
                     }
 
                     else if (onButtonsPane(event)){
+
+                        // Draw semi visible rectangle in black to simulate button click
 
                         int x = event.motion.x / 150;
 
                         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 140);
                         SDL_Rect rectangular;
-                        rectangular.x = (x+1)*20 + x*130 - ((x==6) * 10); // subtract 10 if on clear button, style aspect
+                        rectangular.x = (x+1)*20 + x*130 - ((x==6) * 10); // subtract 10 if on clear button (it doesn't match otherwise)
                         rectangular.y = 20;
                         rectangular.w = 130;
                         rectangular.h = 40;
                         SDL_RenderFillRect(renderer, &rectangular);
+
+                        // detect button and set flags to know which images to render
 
                         if (x == 0){
                             activeOne = 1;
@@ -321,24 +347,32 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                         else if (x == 6){
                             //restartApp();
                         }
+
+                        // Flag to render buttons again but with different images
+
+                        modiefiedButtons = 1;
                     }
                 }
             
             case SDL_MOUSEMOTION:
+
                 if (onFirstPane(event, startX, startY) && leftMouseButtonDown){
+
+                    // Calculate coordinates to draw circle on pane
 
                     int mouseX = event.motion.x - startX - 20;
                     int mouseY = event.motion.y - startY - 20;
-                    
-                    // free memory
-                    // it stops painting when top left
 
-                    int radius = 14;
+                    int radius = 18;
 
                     drawCircle(pixels, mouseX, mouseY, radius);
                 
                 }
+
                 else if (onSecondPane(event, startX, startY)){
+
+                    // Draw semi visible rectangle on top of 
+                    // character image to simulate hover effect
 
                     int x = round((event.motion.x - startX - 547)/70);
                     int y = round((event.motion.y - startY - 27)/70);
@@ -353,16 +387,22 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                         rectangular.h = 65;
                         SDL_RenderFillRect(renderer, &rectangular);
 
-                        SDL_SetCursor(sdlMouseCursor);
+                        SDL_SetCursor(sdlMouseCursor); // change cursor to hand
                     }
 
                     else {
+                        
+                        // if on second pane but not on image then normal cursor
+
                         SDL_SetCursor(initialCursor);
+                    
                     }
                 
                 }
 
                 else if (onButtonsPane(event)){
+
+                    // if over button set cursor to normal
 
                     SDL_SetCursor(sdlMouseCursor);
                 
@@ -370,6 +410,9 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
                 else {
                 
+                    // if not over anything normal cursor. Prevents cursor 
+                    // from staying hand when it stops being over button
+
                     SDL_SetCursor(initialCursor);
                 
                 }
@@ -379,15 +422,16 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
         SDL_RenderCopy(renderer, texture, NULL, pane1);
         SDL_RenderPresent(renderer);
-
-        free(pane1);
-        free(pane2);
-        free(pane3);
-        free(pane4);
-        free(pane5);
     }
 
-    writeMatrix(pixels, "data");
+    free(pane1);
+    free(pane2);
+    free(pane3);
+    free(pane4);
+    free(pane5);
+    free(pane6);
+
+    //writeMatrix(pixels, "data");
 
     for (int i = 0; i < valueChars->count; i++){
         SDL_DestroyTexture(images[i]);
