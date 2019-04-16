@@ -9,7 +9,7 @@ void createDrawingPane(Database * files, SDL_Renderer * renderer, int startX, in
 void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int startX, int startY);
 
 void drawCircle(int pixels[500][500], int x, int y, int radius);
-
+void freeIterationData(charScoreList * chars, SDL_Texture ** images);
 
 SDL_Rect * createPane(SDL_Renderer * renderer, int x, int y, int w, int h);
 SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, int * height);
