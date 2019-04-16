@@ -250,26 +250,17 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                     //printf("%d\n", strokes);
 
                     // Update in case of new stroke
-                    printf("Here, count is %d\n", valueChars->count);
                     if (valueChars->count != 0){ // free if there were any elements
                         for (int i = 0; i < valueChars->count; i++){
                             SDL_DestroyTexture(images[i]);
                         }
                         free(images);
-                        printf("BEFORE Here\n");
                         freeCharScoreList(valueChars);
                     }
-                    printf("NOT Here\n");
+
                     valueChars = parserInit(db, strokes, pixels, mode);
-                    for (int i = 0; i < valueChars->count; i++){
-                        printf("[- Noww: %s\n", valueChars->elements[i]->name);
-                    }
                     images = charScore2texture(renderer, valueChars->elements, valueChars->count);
-                    for (int i = 0; i < valueChars->count; i++){
-                        printf("[- Noww: %s\n", valueChars->elements[i]->name);
-                    }
                     gridAdd(renderer, images, valueChars->count, startX, startY);
-                    printf("NOT NOT Here\n");
 
                     break;
                 }
@@ -303,8 +294,6 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                     else if (onButtonsPane(event)){
 
                         int x = event.motion.x / 150;
-
-                        printf("X is %d\n", x);
 
                         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 140);
                         SDL_Rect rectangular;
@@ -470,7 +459,6 @@ SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList,
     int w, h;
     
     for (int i = 0; i < count; i++){
-        printf("[%d]- Noww: %s\n", count, charList[i]->name);
         textureList[i] = createImage(renderer, charList[i]->name, &w, &h);
     }
     return textureList;

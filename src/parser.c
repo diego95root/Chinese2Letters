@@ -174,11 +174,8 @@ charScoreList * orderCompare(char ** chars, int compareTo[ROWS][COLS], int count
 void freeCharScoreList(charScoreList * list){
 
     for (int i = 0; i < list->count; i++){
-        printf("Now freeing %s", list->elements[i]->name);
         free(list->elements[i]->name);
-        printf(", freeing all element.");
         free(list->elements[i]);
-        printf("Everything freed!\n");
     }
     
     free(list->elements);
