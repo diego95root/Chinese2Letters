@@ -120,8 +120,9 @@ _Bool onFirstPane(SDL_Event event, int startX, int startY){
 _Bool onButtonsPane(SDL_Event event){
     _Bool goodY = event.motion.y > 20 && event.motion.y < 60;
     _Bool goodX = event.motion.x > 20 && event.motion.x < 450;
+    _Bool clearX = event.motion.x > 910 && event.motion.x < 1040;
     _Bool notSpaceX = event.motion.x % 150 > 20;
-    return goodX && goodY && notSpaceX;
+    return (goodX && notSpaceX || clearX) && goodY;
 }
 
 // draw a circle based on the circle's formula: (x - a)**2 + (y - b)**2 = r**2
@@ -149,7 +150,6 @@ SDL_Texture * loadImage(SDL_Renderer * renderer, char * source){
 void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int startY){
     _Bool leftMouseButtonDown = 0;
     _Bool quit = 0;
-    _Bool notPressed = 1;
 
     _Bool activeOne = 1;
     _Bool activeTwo = 0;
@@ -184,6 +184,8 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     SDL_Texture * m3 = loadImage(renderer, "../images/m3.png");
     SDL_Texture * m3b = loadImage(renderer, "../images/m3b.png");
 
+    SDL_Texture * clearImg = loadImage(renderer, "../images/clear.png");
+
     while (!quit){
 
         SDL_SetRenderDrawColor(renderer, 51, 102, 153, 255);
@@ -200,6 +202,8 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
         SDL_Rect * pane3 = createPane(renderer, 20, 20, 130, 40);
         SDL_Rect * pane4 = createPane(renderer, 170, 20, 130, 40);
         SDL_Rect * pane5 = createPane(renderer, 320, 20, 130, 40);
+
+        SDL_Rect * pane6 = createPane(renderer, 910, 20, 130, 40);
 
         if (activeOne){
             mode = 0;
@@ -219,6 +223,8 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
             SDL_RenderCopy(renderer, m2, NULL, pane4);
             SDL_RenderCopy(renderer, m3b, NULL, pane5); 
         }
+
+        SDL_RenderCopy(renderer, clearImg, NULL, pane6);
 
         SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
 
@@ -277,19 +283,19 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                         leftMouseButtonDown = 1;
                     }
 
-                    else if (onButtonsPane(event) && notPressed){
+                    else if (onButtonsPane(event)){
 
                         int x = event.motion.x / 150;
 
+                        printf("X is %d\n", x);
+
                         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 140);
                         SDL_Rect rectangular;
-                        rectangular.x = (x+1)*20 + x*130;
+                        rectangular.x = (x+1)*20 + x*130 - ((x==6) * 10); // subtract 10 if on clear button, style aspect
                         rectangular.y = 20;
                         rectangular.w = 130;
                         rectangular.h = 40;
                         SDL_RenderFillRect(renderer, &rectangular);
-
-                        notPressed = 0;
 
                         if (x == 0){
                             activeOne = 1;
@@ -306,10 +312,9 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                             activeTwo = 0;
                             activeThree = 1;
                         }
-                    }
-
-                    else {
-                        notPressed = 1;
+                        else if (x == 6){
+                            //restartApp();
+                        }
                     }
                 }
             
@@ -454,7 +459,7 @@ SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList,
     return textureList;
 }
 
-int maina(int argc, char* args[]){
+int main(int argc, char* args[]){
 
     SDL_Window   * window   = NULL;
     SDL_Renderer * renderer = NULL;
