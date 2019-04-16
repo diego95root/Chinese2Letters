@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <stdlib.h>
 #include "database.h"
 #include "parser.h"
 #include "UI.h"
@@ -104,8 +105,14 @@ SDL_Rect * createPane(SDL_Renderer * renderer, int x, int y, int w, int h){
 // Given an SDL_Event, return true if the mouse is within some coordinates (second pane)
 
 _Bool onSecondPane(SDL_Event event, int startX, int startY){
-    return event.motion.x > startX + 540 && event.motion.x < startX + 1040 
-            && event.motion.y > startY + 20 && event.motion.y < startY + 520;
+    
+    int x = event.motion.x;
+    int y = event.motion.y;
+
+    _Bool goodX = x > startX + 540 && x < startX + 1040;
+    _Bool goodY = y > startY + 20 && y < startY + 520;
+    
+    return goodX && goodY;
 }
 
 // Same as the function above, but this one checks if in the first pane
@@ -243,16 +250,26 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                     //printf("%d\n", strokes);
 
                     // Update in case of new stroke
+                    printf("Here, count is %d\n", valueChars->count);
                     if (valueChars->count != 0){ // free if there were any elements
                         for (int i = 0; i < valueChars->count; i++){
-                            free(images[i]);
+                            SDL_DestroyTexture(images[i]);
                         }
                         free(images);
+                        printf("BEFORE Here\n");
                         freeCharScoreList(valueChars);
                     }
+                    printf("NOT Here\n");
                     valueChars = parserInit(db, strokes, pixels, mode);
+                    for (int i = 0; i < valueChars->count; i++){
+                        printf("[- Noww: %s\n", valueChars->elements[i]->name);
+                    }
                     images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+                    for (int i = 0; i < valueChars->count; i++){
+                        printf("[- Noww: %s\n", valueChars->elements[i]->name);
+                    }
                     gridAdd(renderer, images, valueChars->count, startX, startY);
+                    printf("NOT NOT Here\n");
 
                     break;
                 }
@@ -384,7 +401,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     writeMatrix(pixels, "data");
 
     for (int i = 0; i < valueChars->count; i++){
-        free(images[i]);
+        SDL_DestroyTexture(images[i]);
     }
     free(images);
     freeCharScoreList(valueChars);
@@ -446,14 +463,14 @@ SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, i
 
 SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList, int count){
 
+    // STILL A PROBLEM HERE OMG
+
     SDL_Texture ** textureList = malloc(sizeof(SDL_Texture *) * count);
     
     int w, h;
-
-    // seems as if only 1 alloc wtf
     
     for (int i = 0; i < count; i++){
-        textureList[i] = malloc(sizeof(textureList[0])); // SDL_Texture is opaque so bypass with pointer
+        printf("[%d]- Noww: %s\n", count, charList[i]->name);
         textureList[i] = createImage(renderer, charList[i]->name, &w, &h);
     }
     return textureList;

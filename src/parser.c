@@ -133,15 +133,15 @@ void readMatrix(int matrix[ROWS][COLS], char *filename){
 
 charScoreList * orderCompare(char ** chars, int compareTo[ROWS][COLS], int count, int mode){
     
-    charScoreList * scoreList = malloc(sizeof(charScoreList *) * count + 80);
+    charScoreList * scoreList = malloc(sizeof(charScoreList));
 
-    scoreList->elements = malloc(sizeof(charScore *) * count * 20);
+    scoreList->elements = malloc(sizeof(charScore *) * count);
 
     scoreList->count = count;
 
     for (int i = 0; i < count; i++){
 
-        scoreList->elements[i] = malloc(sizeof(charScore *) + sizeof(char *));
+        scoreList->elements[i] = malloc(sizeof(charScore));
 
         scoreList->elements[i]->name = malloc(sizeof(char) * 15);
 
@@ -174,10 +174,11 @@ charScoreList * orderCompare(char ** chars, int compareTo[ROWS][COLS], int count
 void freeCharScoreList(charScoreList * list){
 
     for (int i = 0; i < list->count; i++){
-                
+        printf("Now freeing %s", list->elements[i]->name);
         free(list->elements[i]->name);
+        printf(", freeing all element.");
         free(list->elements[i]);
-
+        printf("Everything freed!\n");
     }
     
     free(list->elements);
