@@ -164,14 +164,23 @@ void freeIterationData(charScoreList * chars, SDL_Texture ** images){
     }
 }
 
+void clearGrid(int matrix[500][500]){
+    for (int i = 0; i < 500; i++){
+        for (int j = 0; j < 500; j++){
+            matrix[i][j] = -257;
+        }
+    }
+}
+
 void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int startY){
+    
     _Bool leftMouseButtonDown = 0;
     _Bool quit = 0;
+    _Bool modifiedButtons = 1;
 
     _Bool activeOne = 1;
     _Bool activeTwo = 0;
     _Bool activeThree = 0;
-    _Bool modiefiedButtons = 1;
 
     int mode = 0;
 
@@ -189,11 +198,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
     int pixels[500][500];
     
-    for (int i = 0; i < 500; i++){
-        for (int j = 0; j < 500; j++){
-            pixels[i][j] = -257;
-        }
-    }
+    clearGrid(pixels); // set all to white
 
     charScoreList * valueChars = parserInit(db, strokes, pixels, mode);
     SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, valueChars->count);
@@ -223,13 +228,9 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     SDL_SetRenderDrawColor(renderer, 255, 102, 100, 255);
     SDL_Rect * pane1 = createPane(renderer, startX + 20, startY + 20, 500, 500);
 
-    // seconde pane, where images will be presented
-
-    SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
-    SDL_Rect * pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
-
     // four top panes, one for each button
 
+    SDL_Rect * pane2;
     SDL_Rect * pane3 = createPane(renderer, 20, 20, 130, 40);
     SDL_Rect * pane4 = createPane(renderer, 170, 20, 130, 40);
     SDL_Rect * pane5 = createPane(renderer, 320, 20, 130, 40);
@@ -237,13 +238,18 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
     while (!quit){
 
-        // ADD FLAG AS WELL FOR GRID ADD; ONLY IF CHANGED
-
-        gridAdd(renderer, images, valueChars->count, startX, startY);
-        
         SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
 
-        if (modiefiedButtons){
+
+        // second pane, where images will be presented
+
+        SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
+        pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
+        
+        gridAdd(renderer, images, valueChars->count, startX, startY);
+        
+        
+        if (modifiedButtons){
 
             // load blue or black depending on active flag
 
@@ -256,7 +262,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
             SDL_RenderCopy(renderer, loadedTextures[6], NULL, pane6);
 
             mode = activeTwo + activeThree * 2; // calculate new mode for algorithm
-            modiefiedButtons = 0;
+            modifiedButtons = 0;
         }
 
         SDL_WaitEvent(&event);
@@ -355,12 +361,30 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                             activeThree = 1;
                         }
                         else if (x == 6){
-                            //restartApp();
+
+                            // reset strokes to 0
+                            
+                            strokes = 0;
+
+                            // clear drawing grid
+
+                            clearGrid(pixels);
+
+                            // Update in case of new stroke by freeing previous elements first
+
+                            freeIterationData(valueChars, images);
+
+                            // get new elements
+
+                            valueChars = parserInit(db, strokes, pixels, mode);
+                            images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+                            gridAdd(renderer, images, valueChars->count, startX, startY);
+
                         }
 
                         // Flag to render buttons again but with different images
 
-                        modiefiedButtons = 1;
+                        modifiedButtons = 1;
                     }
                 }
             
