@@ -149,7 +149,7 @@ void test_comparisonReturnsCharacter(){
         
         for (int j = 0; j < results->count; j++){
             if (strcmp(results->elements[j]->name, arr[i]) == 0){
-                //printf("%d out of %d\n", j, results->count);
+                //printf("|__[%s]: %d out of %d\n", arr[i], j, results->count);
                 TEST_ASSERT_INT_WITHIN(4, 0, j); // good result if within first 5 results
                 break;
             }
