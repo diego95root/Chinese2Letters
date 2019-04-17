@@ -5,8 +5,6 @@
 #include "parser.h"
 #include "UI.h"
 
-int strokes = 0;
-
 // Initialise all necessary things for the main window, including its size
 
 void initWindow(SDL_Window * window, SDL_Renderer ** renderer, int width, int height){
@@ -174,6 +172,8 @@ void clearGrid(int matrix[500][500]){
 
 void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int startY){
     
+    // control flags
+
     _Bool leftMouseButtonDown = 0;
     _Bool quit = 0;
     _Bool modifiedButtons = 1;
@@ -183,25 +183,26 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     _Bool activeThree = 0;
 
     int mode = 0;
-
-    // ADD SOMETHING SO THAT NOT EVERYHTING AGAIN ON EACH ITERATION
-
-    // ADD A FLAG FOR BUTTONS CHANGES
-
-    // FUNCTION TO DRAW BLACK RECTANGLES
+    int strokes = 0;
 
     SDL_Event event;
+
+    // set up different cursors
 
     SDL_Cursor * initialCursor = SDL_GetCursor();
     SDL_Surface * image = IMG_Load("../images/mouse.png");
     SDL_Cursor * sdlMouseCursor = SDL_CreateColorCursor(image, 14, 8);
 
+    // create and set grid to white
+
     int pixels[500][500];
     
     clearGrid(pixels); // set all to white
 
+    // get all data for the grid
+
     charScoreList * valueChars = parserInit(db, strokes, pixels, mode);
-    SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+    SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, db->sourcePath, valueChars->count);
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
 
     // load all images in an array of sdl textures 
@@ -240,8 +241,9 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
         SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
 
-
-        // second pane, where images will be presented
+        // second pane, where images will be presented, needs rendering on every cycle 
+        // due to the rectangle over images to simulate hover (if not rendered again it
+        // stays there)
 
         SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
         pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
@@ -249,7 +251,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
         gridAdd(renderer, images, valueChars->count, startX, startY);
         
         
-        if (modifiedButtons){
+        if (modifiedButtons){ // only load buttons again if they have been modified
 
             // load blue or black depending on active flag
 
@@ -274,6 +276,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                 break;
             
             case SDL_MOUSEBUTTONUP:
+
                 if (event.button.button == SDL_BUTTON_LEFT && onFirstPane(event, startX, startY)){
                     
                     leftMouseButtonDown = 0;
@@ -286,7 +289,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                     // get new elements
 
                     valueChars = parserInit(db, strokes, pixels, mode);
-                    images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+                    images = charScore2texture(renderer, valueChars->elements, db->sourcePath, valueChars->count);
                     gridAdd(renderer, images, valueChars->count, startX, startY);
 
                     break;
@@ -296,7 +299,15 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                 
                 if (event.button.button == SDL_BUTTON_LEFT){
                     
-                    if (onSecondPane(event, startX, startY)){
+                    if (onFirstPane(event, startX, startY)){
+
+                        // Flag to know if we can draw 
+
+                        leftMouseButtonDown = 1;                        
+                    
+                    }
+
+                    else if (onSecondPane(event, startX, startY)){
                         
                         int x = round((event.motion.x - 547)/70);
                         int y = round((event.motion.y - startY - 27)/70);
@@ -321,14 +332,6 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                         }
                     }
 
-                    else if (onFirstPane(event, startX, startY)){
-
-                        // Flag to know if we can draw 
-
-                        leftMouseButtonDown = 1;                        
-                    
-                    }
-
                     else if (onButtonsPane(event)){
 
                         // Draw semi visible rectangle in black to simulate button click
@@ -336,12 +339,16 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                         int x = event.motion.x / 150;
 
                         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 140);
-                        SDL_Rect rectangular;
-                        rectangular.x = (x+1)*20 + x*130 - ((x==6) * 10); // subtract 10 if on clear button (it doesn't match otherwise)
-                        rectangular.y = 20;
-                        rectangular.w = 130;
-                        rectangular.h = 40;
-                        SDL_RenderFillRect(renderer, &rectangular);
+                        
+                        // subtract 10 if on clear button (it doesn't match otherwise)
+
+                        SDL_Rect * rectangular = createPane(renderer, 
+                                                            (x+1)*20 + x*130 - ((x==6) * 10),
+                                                            20, 
+                                                            130, 
+                                                            40);
+
+                        SDL_RenderFillRect(renderer, rectangular);
 
                         // detect button and set flags to know which images to render
 
@@ -377,7 +384,7 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                             // get new elements
 
                             valueChars = parserInit(db, strokes, pixels, mode);
-                            images = charScore2texture(renderer, valueChars->elements, valueChars->count);
+                            images = charScore2texture(renderer, valueChars->elements, db->sourcePath, valueChars->count);
                             gridAdd(renderer, images, valueChars->count, startX, startY);
 
                         }
@@ -414,12 +421,12 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                     if ( y * 7 + x < valueChars->count){ // only color if over image
 
                         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 100);
-                        SDL_Rect rectangular;
-                        rectangular.x = startX + 540 + 7 + x*70;
-                        rectangular.y = startY + 27 + y*70;
-                        rectangular.w = 65;
-                        rectangular.h = 65;
-                        SDL_RenderFillRect(renderer, &rectangular);
+                        SDL_Rect * rectangular = createPane(renderer, 
+                                                            startX + 540 + 7 + x*70,
+                                                            startY + 27 + y*70, 
+                                                            65, 
+                                                            65);
+                        SDL_RenderFillRect(renderer, rectangular);
 
                         SDL_SetCursor(sdlMouseCursor); // change cursor to hand
                     }
@@ -511,12 +518,13 @@ void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int sta
     }
 }
 
-SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, int * height){
+SDL_Texture * createImage(SDL_Renderer * renderer, char * source, char sourcePath[], int * width, int * height){
 
-    char sourcePath[30] = "../chars3/"; // REMOVE THIS; PERFORM THE CONCAT BEFORE?
-    strcat(sourcePath, source);
+    char join[30] = "";
+    strcat(join, sourcePath);
+    strcat(join, source);
 
-    SDL_Texture * img = IMG_LoadTexture(renderer, sourcePath);
+    SDL_Texture * img = IMG_LoadTexture(renderer, join);
     SDL_QueryTexture(img, NULL, NULL, width, height);
     return img;
 }
@@ -524,21 +532,19 @@ SDL_Texture * createImage(SDL_Renderer * renderer, char * source, int * width, i
 // From a sorted array of images and scores (charScore), return ordered array 
 // of SDL_textures
 
-SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList, int count){
-
-    // STILL A PROBLEM HERE OMG
+SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList, char sourcePath[], int count){
 
     SDL_Texture ** textureList = malloc(sizeof(SDL_Texture *) * count);
     
     int w, h;
     
     for (int i = 0; i < count; i++){
-        textureList[i] = createImage(renderer, charList[i]->name, &w, &h);
+        textureList[i] = createImage(renderer, charList[i]->name, sourcePath, &w, &h);
     }
     return textureList;
 }
 
-int main(int argc, char* args[]){
+void startApp(char sourcePath[]){
 
     SDL_Window   * window   = NULL;
     SDL_Renderer * renderer = NULL;
@@ -546,7 +552,7 @@ int main(int argc, char* args[]){
     int width = 1060;
     int height = 600; // 540 + 60 for above bar
 
-    Database * db = parserGetDB("../chars3/");
+    Database * db = parserGetDB(sourcePath);
 
     initWindow(window, &renderer, width, height);
 
@@ -555,6 +561,4 @@ int main(int argc, char* args[]){
     closeWindow(window);
 
     parserEnd(db);
-
-    return 0;
 }
