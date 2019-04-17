@@ -1,4 +1,4 @@
-#define MAX_STROKES 15 // remove from here
+#define MAX_STROKES 35 // remove from here
 
 typedef struct strokesGroup {
     int strokes;
@@ -9,6 +9,7 @@ typedef struct strokesGroup {
 typedef struct database {
     strokesGroup groups[MAX_STROKES];
     int length;
+    char * sourcePath;
 } Database;
 
 char ** splitFilename(char * name);

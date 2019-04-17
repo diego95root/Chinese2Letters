@@ -151,6 +151,15 @@ Database * openDB(char * directory){
     
     Database * array = malloc(sizeof(Database));
 
+    array->sourcePath = malloc(sizeof(char) * 50);
+
+    if (strlen(directory) > 49){
+        printf("Couldn't use such a long directory!\n");
+        exit(-1);
+    }
+
+    strcpy(array->sourcePath, directory);
+
     // array with the number of characters with x strokes
     int arr[MAX_STROKES] = {0};
 
