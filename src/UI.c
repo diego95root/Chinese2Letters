@@ -130,14 +130,18 @@ _Bool onButtonsPane(SDL_Event event){
     return (goodX && notSpaceX || clearX) && goodY;
 }
 
-// draw a circle based on the circle's formula: (x - a)**2 + (y - b)**2 = r**2
+// draw a circle based on the circle's equation: (x - a)**2 + (y - b)**2 = r**2
 
 void drawCircle(int pixels[500][500], int x, int y, int radius){
 
     for (int i = x - radius; i <= x + radius; i++){
         for (int j = y - radius; j <= y + radius; j++){
+
+            // use circle equation
             if (pow(x-i, 2) + pow(y-j, 2) <= pow(radius, 2)){
-                if (j >= 0 && j < 500 && i >= 0 && j < 500){ // checks to prevent segfaults when drawing outside
+
+                // checks to prevent segfaults when drawing outside
+                if (j >= 0 && j < 500 && i >= 0 && j < 500){ 
                     pixels[j][i] = 0;
                 }
             }
@@ -152,6 +156,78 @@ SDL_Texture * loadImage(SDL_Renderer * renderer, char * source){
     return texture;
 }
 
+// Copies images (passed in a pointer to an array of SDL_Textures) to a location
+// in the window (second pane)
+
+void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int startX, int startY){
+    
+    if (length > 49){
+        length = 49;
+    }
+
+    int x = length / 7;
+    int y = length % 7;
+
+    int count = 0;
+    int i;
+
+    for (i = 0; i < x; i++){
+        for (int j = 0; j < 7; j++){
+            SDL_Rect rectangular;
+            rectangular.x = startX + 540 + 7 + j*70;
+            rectangular.y = startY + 27 + i*70;
+            rectangular.w = 65;
+            rectangular.h = 65;
+            SDL_RenderCopy(renderer, images[count], NULL, &rectangular);
+            count++;
+        }
+    }
+
+    if (y != 0){
+        for (int j = 0; j < y; j++){
+            SDL_Rect rectangular;
+            rectangular.x = startX + 540 + 7 + j*70;
+            rectangular.y = startY + 27 + i*70;
+            rectangular.w = 65;
+            rectangular.h = 65;
+            SDL_RenderCopy(renderer, images[count], NULL, &rectangular);
+            count++;
+        }
+    }
+}
+
+// Create an image texture from the directory and the name of the file provided,
+// it returns a pointer to that SDL_Texture.
+
+SDL_Texture * createImage(SDL_Renderer * renderer, char * source, char sourcePath[], int * width, int * height){
+
+    char join[30] = "";
+    strcat(join, sourcePath);
+    strcat(join, source);
+
+    SDL_Texture * img = IMG_LoadTexture(renderer, join);
+    SDL_QueryTexture(img, NULL, NULL, width, height);
+    return img;
+}
+
+// From an array of images and scores (charScore) with their directory, return pointer to an array 
+// of SDL_textures
+
+SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList, char sourcePath[], int count){
+
+    SDL_Texture ** textureList = malloc(sizeof(SDL_Texture *) * count);
+    
+    int w, h;
+    
+    for (int i = 0; i < count; i++){
+        textureList[i] = createImage(renderer, charList[i]->name, sourcePath, &w, &h);
+    }
+    return textureList;
+}
+
+// Destory all data from images (stored in a pointer to an array of SDL_Textures) and
+// free all data in the charScoreList structure
+
 void freeIterationData(charScoreList * chars, SDL_Texture ** images){
     if (chars->count != 0){
         for (int i = 0; i < chars->count; i++){
@@ -162,6 +238,8 @@ void freeIterationData(charScoreList * chars, SDL_Texture ** images){
     }
 }
 
+// Set drawing grid to be all white
+
 void clearGrid(int matrix[500][500]){
     for (int i = 0; i < 500; i++){
         for (int j = 0; j < 500; j++){
@@ -170,7 +248,9 @@ void clearGrid(int matrix[500][500]){
     }
 }
 
-void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int startY){
+// Main loop of the app
+
+void mainLoopWindow(Database * db, SDL_Renderer * renderer, int startX, int startY){
     
     // control flags
 
@@ -231,13 +311,15 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
 
     // four top panes, one for each button
 
-    SDL_Rect * pane2;
+    SDL_Rect * pane2; // pane for images
     SDL_Rect * pane3 = createPane(renderer, 20, 20, 130, 40);
     SDL_Rect * pane4 = createPane(renderer, 170, 20, 130, 40);
     SDL_Rect * pane5 = createPane(renderer, 320, 20, 130, 40);
     SDL_Rect * pane6 = createPane(renderer, 910, 20, 130, 40);
 
     while (!quit){
+
+        // update drawing pane on each iteration
 
         SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
 
@@ -248,6 +330,8 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
         SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
         pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
         
+        // add images to new pane
+
         gridAdd(renderer, images, valueChars->count, startX, startY);
         
         
@@ -369,13 +453,11 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                         }
                         else if (x == 6){
 
-                            // reset strokes to 0
+                            // Reset app to start again everything 
                             
-                            strokes = 0;
+                            strokes = 0; // reset strokes to 0
 
-                            // clear drawing grid
-
-                            clearGrid(pixels);
+                            clearGrid(pixels); // clear drawing grid
 
                             // Update in case of new stroke by freeing previous elements first
 
@@ -384,7 +466,8 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                             // get new elements
 
                             valueChars = parserInit(db, strokes, pixels, mode);
-                            images = charScore2texture(renderer, valueChars->elements, db->sourcePath, valueChars->count);
+                            images = charScore2texture(renderer, valueChars->elements, 
+                                                       db->sourcePath, valueChars->count);
                             gridAdd(renderer, images, valueChars->count, startX, startY);
 
                         }
@@ -461,9 +544,15 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
                 break;
         }
 
+        // copy drawing grid to texture and render everything
+
         SDL_RenderCopy(renderer, texture, NULL, pane1);
         SDL_RenderPresent(renderer);
     }
+
+    //writeMatrix(pixels, "data");
+
+    // free all panes and data before exiting
 
     free(pane1);
     free(pane2);
@@ -472,76 +561,11 @@ void createDrawingPane(Database * db, SDL_Renderer * renderer, int startX, int s
     free(pane5);
     free(pane6);
 
-    //writeMatrix(pixels, "data");
-
     freeIterationData(valueChars, images);
 
     SDL_FreeSurface(image);
     SDL_FreeCursor(sdlMouseCursor);
     SDL_FreeCursor(initialCursor);
-}
-
-void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int startX, int startY){
-    
-    if (length > 49){
-        length = 49;
-    }
-
-    int x = length / 7;
-    int y = length % 7;
-
-    int count = 0;
-    int i;
-
-    for (i = 0; i < x; i++){
-        for (int j = 0; j < 7; j++){
-            SDL_Rect rectangular;
-            rectangular.x = startX + 540 + 7 + j*70;
-            rectangular.y = startY + 27 + i*70;
-            rectangular.w = 65;
-            rectangular.h = 65;
-            SDL_RenderCopy(renderer, images[count], NULL, &rectangular);
-            count++;
-        }
-    }
-
-    if (y != 0){
-        for (int j = 0; j < y; j++){
-            SDL_Rect rectangular;
-            rectangular.x = startX + 540 + 7 + j*70;
-            rectangular.y = startY + 27 + i*70;
-            rectangular.w = 65;
-            rectangular.h = 65;
-            SDL_RenderCopy(renderer, images[count], NULL, &rectangular);
-            count++;
-        }
-    }
-}
-
-SDL_Texture * createImage(SDL_Renderer * renderer, char * source, char sourcePath[], int * width, int * height){
-
-    char join[30] = "";
-    strcat(join, sourcePath);
-    strcat(join, source);
-
-    SDL_Texture * img = IMG_LoadTexture(renderer, join);
-    SDL_QueryTexture(img, NULL, NULL, width, height);
-    return img;
-}
-
-// From a sorted array of images and scores (charScore), return ordered array 
-// of SDL_textures
-
-SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList, char sourcePath[], int count){
-
-    SDL_Texture ** textureList = malloc(sizeof(SDL_Texture *) * count);
-    
-    int w, h;
-    
-    for (int i = 0; i < count; i++){
-        textureList[i] = createImage(renderer, charList[i]->name, sourcePath, &w, &h);
-    }
-    return textureList;
 }
 
 void startApp(char sourcePath[]){
@@ -556,7 +580,7 @@ void startApp(char sourcePath[]){
 
     initWindow(window, &renderer, width, height);
 
-    createDrawingPane(db, renderer, 0, 60);
+    mainLoopWindow(db, renderer, 0, 60);
 
     closeWindow(window);
 

@@ -7,7 +7,7 @@ _Bool onFirstPane(SDL_Event event, int startX, int startY);
 _Bool onSecondPane(SDL_Event event, int startX, int startY);
 _Bool onButtonsPane(SDL_Event event);
 
-void createDrawingPane(Database * files, SDL_Renderer * renderer, int startX, int startY);
+void mainLoopWindow(Database * files, SDL_Renderer * renderer, int startX, int startY);
 
 void drawCircle(int pixels[500][500], int x, int y, int radius);
 void freeIterationData(charScoreList * chars, SDL_Texture ** images);
