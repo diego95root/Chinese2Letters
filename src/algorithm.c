@@ -4,9 +4,6 @@
 #include <string.h>
 #include "algorithm.h"
 
-// ADD MAX ROW MAX COL INSTEAD OF 500
-// USE CAMEL NOTATION FOR VARSS
-
 // to avoid calculating things twice, store data for grid in global variables,
 // and update it whenever a new stroke is drawn. It will be compared to all the 
 // images so it makes no sense to calculate it every time.
@@ -15,12 +12,12 @@ int mainIslandsWhite;
 int mainIslandsBlack;
 int initMode;
 
-int rowPixels[500]; 
-int colPixels[500]; 
-int colTop[500];    
-int colBottom[500]; 
-int rowLeft[500];   
-int rowRight[500];
+int rowPixels[ROWS]; 
+int colPixels[ROWS]; 
+int colTop[ROWS];    
+int colBottom[ROWS]; 
+int rowLeft[ROWS];   
+int rowRight[ROWS];
 
 // code main idea from http://www.interviewdruid.com/find-the-number-of-islands-in-a-matrix/
 
@@ -125,7 +122,7 @@ int findIslands(int matrix[ROWS][COLS], int isWhite){
 
 // function obtained from https://www.geeksforgeeks.org/program-find-correlation-coefficient/
 
-double correlationCoefficient(int X[500], int Y[500], int n) { 
+double correlationCoefficient(int X[ROWS], int Y[COLS], int n) { 
   
     double sum_X = 0, sum_Y = 0, sum_XY = 0; 
     double squareSum_X = 0, squareSum_Y = 0; 
@@ -156,10 +153,10 @@ double correlationCoefficient(int X[500], int Y[500], int n) {
 // helper function that takes a matrix of NxM dimensions and updates two arrays
 // of size N and M with the number of black elements in the rows N and cols M
 
-void countColsRows(int main[500][500], int rows[500], int cols[500]){
+void countColsRows(int main[ROWS][COLS], int rows[ROWS], int cols[COLS]){
     
-    for (int x = 0; x < 500; x++){
-        for (int y = 0; y < 500; y++){
+    for (int x = 0; x < ROWS; x++){
+        for (int y = 0; y < COLS; y++){
 
             // rowPixels & column pixels handled here
 
@@ -172,21 +169,21 @@ void countColsRows(int main[500][500], int rows[500], int cols[500]){
     }
 }
 
-void countStartDirections(int main[500][500], int top[500], int right[500], int bottom[500], int left[500]){
+void countStartDirections(int main[ROWS][COLS], int top[COLS], int right[ROWS], int bottom[COLS], int left[ROWS]){
 
     int leftFound; 
     int rightFound; 
     int topFound;
     int bottomFound;
 
-    for (int i = 0; i < 500; i ++){
+    for (int i = 0; i < ROWS; i ++){
         
         leftFound = 0;
         rightFound = 0;
         topFound = 0;
         bottomFound = 0;
 
-        for (int j = 0; j < 500; j ++){
+        for (int j = 0; j < COLS; j ++){
             if (leftFound && rightFound && topFound && bottomFound){
                 break;
             }
@@ -194,7 +191,7 @@ void countStartDirections(int main[500][500], int top[500], int right[500], int 
                 left[i] = j;
                 leftFound = 1;
             }
-            if (main[i][500-j-1] == 0 && !rightFound){
+            if (main[i][COLS-j-1] == 0 && !rightFound){
                 right[i] = j;
                 rightFound = 1;
             }
@@ -202,7 +199,7 @@ void countStartDirections(int main[500][500], int top[500], int right[500], int 
                 top[i] = j;
                 topFound = 1;
             }
-            if (main[500-j-1][i] == 0 && !bottomFound){
+            if (main[ROWS-j-1][i] == 0 && !bottomFound){
                 bottom[i] = j;
                 bottomFound = 1;
             }
@@ -212,7 +209,7 @@ void countStartDirections(int main[500][500], int top[500], int right[500], int 
 
 // set data for the drawn image on the grid, only needs to be calculated once per round of strokes
 
-void setCompareTo(int compareTo[500][500], int mode){
+void setCompareTo(int compareTo[ROWS][COLS], int mode){
 
     // depending on the mode do different operations, but always correlation
 
@@ -245,7 +242,7 @@ void setCompareTo(int compareTo[500][500], int mode){
 
 // main function that controls the algorithm behaviour
 
-double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initFlag, int mode){
+double compareAlgorithm(int compareTo[ROWS][COLS], int matrix[ROWS][COLS], int initFlag, int mode){
 
     // To improve efficiency calculations on compareTo should only be done once,
     // as they are expensive and all the matrices are being compared to the same.
@@ -289,23 +286,23 @@ double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initF
     // idea for the arrays and the correlation taken from 
     // https://stackoverflow.com/questions/22786288/ocr-and-character-similarity
 
-    int rowPixels2[500] = {0}; 
-    int colPixels2[500] = {0}; 
-    int colTop2[500] = {0};    
-    int colBottom2[500] = {0}; 
-    int rowLeft2[500] = {0};   
-    int rowRight2[500] = {0};
+    int rowPixels2[ROWS] = {0}; 
+    int colPixels2[COLS] = {0}; 
+    int colTop2[COLS] = {0};    
+    int colBottom2[COLS] = {0}; 
+    int rowLeft2[ROWS] = {0};   
+    int rowRight2[ROWS] = {0};
 
     countColsRows(matrix, rowPixels2, colPixels2);
         
     countStartDirections(matrix, colTop2, rowRight2, colBottom2, rowLeft2);
 
-    double a = correlationCoefficient(rowPixels, rowPixels2, 500);
-    double b = correlationCoefficient(colPixels, colPixels2, 500);
-    double c = correlationCoefficient(colTop, colTop2, 500);
-    double d = correlationCoefficient(colBottom, colBottom2, 500);
-    double e = correlationCoefficient(rowLeft, rowLeft2, 500);
-    double f = correlationCoefficient(rowRight, rowRight2, 500);
+    double a = correlationCoefficient(rowPixels, rowPixels2, ROWS);
+    double b = correlationCoefficient(colPixels, colPixels2, COLS);
+    double c = correlationCoefficient(colTop, colTop2, COLS);
+    double d = correlationCoefficient(colBottom, colBottom2, COLS);
+    double e = correlationCoefficient(rowLeft, rowLeft2, ROWS);
+    double f = correlationCoefficient(rowRight, rowRight2, ROWS);
 
     return (a+b+c+d+e+f)/6;
 }
