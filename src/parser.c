@@ -29,18 +29,19 @@ void parserEnd(Database * files){
 
 charScoreList * parserInit(Database * files, int stroke, int matrix[ROWS][COLS], int mode){
     
+    char * source = files->sourcePath;
     char ** strokeFiles = getStrokeFiles(stroke, files);
     int count = getNumberByStroke(stroke, files);
 
     charScoreList * valueChars;
 
     if (count == -1){
-        valueChars = orderCompare(strokeFiles, matrix, 0, mode);
+        valueChars = orderCompare(strokeFiles, source, matrix, 0, mode);
         free(strokeFiles[0]);
         free(strokeFiles);
     }
     else {
-        valueChars = orderCompare(strokeFiles, matrix, count, mode);
+        valueChars = orderCompare(strokeFiles, source, matrix, count, mode);
     }
 
     return valueChars;
@@ -131,7 +132,7 @@ void readMatrix(int matrix[ROWS][COLS], char *filename){
 // image in the file to the matrix (drawn by the user). The structure
 // contains the results in sorted order (highest similarity to lowest).
 
-charScoreList * orderCompare(char ** chars, int compareTo[ROWS][COLS], int count, int mode){
+charScoreList * orderCompare(char ** chars, char * directory, int compareTo[ROWS][COLS], int count, int mode){
     
     charScoreList * scoreList = malloc(sizeof(charScoreList));
 
@@ -147,9 +148,10 @@ charScoreList * orderCompare(char ** chars, int compareTo[ROWS][COLS], int count
 
         strcpy(scoreList->elements[i]->name, chars[i]);
         
-        char sourcePath[30] = "../chars3/";
+        char sourcePath[70] = "";
         int matrix[ROWS][COLS];
 
+        strcat(sourcePath, directory);
         strcat(sourcePath, chars[i]);
         image2matrix(matrix, sourcePath);
 
