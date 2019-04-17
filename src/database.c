@@ -253,5 +253,6 @@ void closeDB(Database * files){
         free(group->names);
     }
     
+    free(files->sourcePath);
     free(files);
 }
