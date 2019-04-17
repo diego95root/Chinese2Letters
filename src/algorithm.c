@@ -4,6 +4,9 @@
 #include <string.h>
 #include "algorithm.h"
 
+// ADD MAX ROW MAX COL INSTEAD OF 500
+// USE CAMEL NOTATION FOR VARSS
+
 // to avoid calculating things twice, store data for grid in global variables,
 // and update it whenever a new stroke is drawn. It will be compared to all the 
 // images so it makes no sense to calculate it every time.
@@ -12,12 +15,12 @@ int mainIslandsWhite;
 int mainIslandsBlack;
 int initMode;
 
-int row_pixels[500]; 
-int col_pixels[500]; 
-int col_top[500];    
-int col_bottom[500]; 
-int row_left[500];   
-int row_right[500];
+int rowPixels[500]; 
+int colPixels[500]; 
+int colTop[500];    
+int colBottom[500]; 
+int rowLeft[500];   
+int rowRight[500];
 
 // code main idea from http://www.interviewdruid.com/find-the-number-of-islands-in-a-matrix/
 
@@ -25,15 +28,16 @@ int row_right[500];
 Cell can be entered if within range, not visited and is black
 */
 
-int can_enter_cell(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col, int isWhite){
+int canEnterCell(int matrix[ROWS][COLS], int isVisited[ROWS][COLS], int currentRow, int currentCol, int isWhite){
     
-    if (matrix[cur_row][cur_col] == 0 && isWhite)
+    if (matrix[currentRow][currentCol] == 0 && isWhite)
         return 0;
         
-    else if (matrix[cur_row][cur_col] != 0 && !isWhite)
+    else if (matrix[currentRow][currentCol] != 0 && !isWhite)
         return 0;
 
-    if (cur_row < 0 || cur_row >= ROWS || cur_col < 0 || cur_col >= COLS || is_visited[cur_row][cur_col]) {
+    if (currentRow < 0 || currentRow >= ROWS || currentCol < 0 || currentCol >= COLS 
+        || isVisited[currentRow][currentCol]) {
 
         return 0;
     }
@@ -43,44 +47,44 @@ int can_enter_cell(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_r
  
 /* Helper function to count the number of islands of 1's
 matrix: 2d matrix consisting of 0's and 1's
-is_visited: if cell (i, j) has been visited, is_visited[i][j] is set to 1
-cur_row: row of the current cell being processed
-cur_col: column of the current cell being processed
+isVisited: if cell (i, j) has been visited, isVisited[i][j] is set to 1
+currentRow: row of the current cell being processed
+currentCol: column of the current cell being processed
 */
 
-void expand_search(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col, int isWhite){
+void expandSearch(int matrix[ROWS][COLS], int isVisited[ROWS][COLS], int currentRow, int currentCol, int isWhite){
 
     int i, j;
  
-    is_visited[cur_row][cur_col] = 1;
+    isVisited[currentRow][currentCol] = 1;
  
     /*For the current cell, find out if we can continue the island of 1's
     with its neighbors. Each cell has 9 neighbors. The rows
-    of neighbors will vary from cur_row - 1 to cur_row + 1
-    The columns of the neighbors will vary from cur_col - 1
-    to cur_col + 1*/
+    of neighbors will vary from currentRow - 1 to currentRow + 1
+    The columns of the neighbors will vary from currentCol - 1
+    to currentCol + 1*/
 
     for (i = -1; i <= 1; ++i) {
         for (j = -1; j <= 1; ++j) {
 
-            int is_safe_cell = can_enter_cell(matrix, is_visited, cur_row+i, cur_col+j, isWhite);
+            int isSafeCell = canEnterCell(matrix, isVisited, currentRow+i, currentCol+j, isWhite);
 
-            if (is_safe_cell) {
-                expand_search(matrix, is_visited, cur_row+i, cur_col+j, isWhite);
+            if (isSafeCell) {
+                expandSearch(matrix, isVisited, currentRow+i, currentCol+j, isWhite);
             }
         }
     }
 }
 
-int find_islands(int matrix[ROWS][COLS], int isWhite){
+int findIslands(int matrix[ROWS][COLS], int isWhite){
 
-    int is_visited[ROWS][COLS];
+    int isVisited[ROWS][COLS];
     int i, j, count;
  
     /*Initially all cells are not yet visited*/
     for (i = 0; i < ROWS; ++i)
         for (j = 0; j < COLS; ++j) 
-            is_visited[i][j] = 0;
+            isVisited[i][j] = 0;
  
     /*Search all the cells in matrix that are not yet visited*/
     count = 0;
@@ -92,9 +96,9 @@ int find_islands(int matrix[ROWS][COLS], int isWhite){
             for (j = 0; j < COLS; ++j) {
 
                 // absolute value because in grid it is stored as -257 due to 2s complement
-                if (abs(matrix[i][j]) > 254 && !is_visited[i][j]) {
+                if (abs(matrix[i][j]) > 254 && !isVisited[i][j]) {
                     
-                    expand_search(matrix, is_visited, i, j, 1); // island found
+                    expandSearch(matrix, isVisited, i, j, 1); // island found
                     ++count;
                 }
             }
@@ -106,9 +110,9 @@ int find_islands(int matrix[ROWS][COLS], int isWhite){
         for (i = 0; i < ROWS; ++i) {
             for (j = 0; j < COLS; ++j) {
 
-                if (matrix[i][j] == 0 && !is_visited[i][j]) {
+                if (matrix[i][j] == 0 && !isVisited[i][j]) {
 
-                    expand_search(matrix, is_visited, i, j, 0);
+                    expandSearch(matrix, isVisited, i, j, 0);
                     ++count;
                 }
             }
@@ -149,83 +153,6 @@ double correlationCoefficient(int X[500], int Y[500], int n) {
     return corr; 
 } 
 
-// set data for the drawn image on the grid, only needs to be calculated once per round of strokes
-
-void setCompareTo(int compareTo[500][500], int mode){
-
-    // depending on the mode do different operations, but always correlation
-
-    if (mode > 0){
-
-        mainIslandsBlack = find_islands(compareTo, 0);  // 0 to get black islands
-    
-    }
-    
-    if (mode > 1){
-     
-        mainIslandsWhite = find_islands(compareTo, 1); // 1 to get white islands
-
-    }
-
-    // reset all arrays to 0
-
-    memset(row_pixels, 0, sizeof(row_pixels));
-    memset(col_pixels, 0, sizeof(col_pixels));
-    memset(col_bottom, 0, sizeof(col_bottom));
-    memset(col_top, 0, sizeof(col_top));
-    memset(row_left, 0, sizeof(row_left));
-    memset(row_right, 0, sizeof(row_right));
-
-    for (int x = 0; x < 500; x++){
-        for (int y = 0; y < 500; y++){
-
-            // row_pixels & column pixels handled here
-
-            if (compareTo[x][y] == 0){
-                row_pixels[x]++;
-                col_pixels[y]++;
-            }
-        }
-    }
-        
-
-    int left_found; 
-    int right_found; 
-    int colT_found;
-    int colB_found;
-
-    for (int i = 0; i < 500; i ++){
-        
-        left_found = 0;
-        right_found = 0;
-        colT_found = 0;
-        colB_found = 0;
-
-        for (int j = 0; j < 500; j ++){
-            if (left_found && right_found && colT_found && colB_found){
-                break;
-            }
-            if (compareTo[i][j] == 0 && !left_found){
-                row_left[i] = j;
-                left_found = 1;
-            }
-            if (compareTo[i][500-j-1] == 0 && !right_found){
-                row_right[i] = j;
-                right_found = 1;
-            }
-            if (compareTo[j][i] == 0 && !colT_found){
-                col_top[i] = j;
-                colT_found = 1;
-            }
-            if (compareTo[500-j-1][i] == 0 && !colB_found){
-                col_bottom[i] = j;
-                colB_found = 1;
-            }
-        }
-    }
-
-}
-
 // helper function that takes a matrix of NxM dimensions and updates two arrays
 // of size N and M with the number of black elements in the rows N and cols M
 
@@ -234,7 +161,7 @@ void countColsRows(int main[500][500], int rows[500], int cols[500]){
     for (int x = 0; x < 500; x++){
         for (int y = 0; y < 500; y++){
 
-            // row_pixels & column pixels handled here
+            // rowPixels & column pixels handled here
 
             if (main[x][y] == 0){
                 rows[x]++;
@@ -243,6 +170,77 @@ void countColsRows(int main[500][500], int rows[500], int cols[500]){
 
         }
     }
+}
+
+void countStartDirections(int main[500][500], int top[500], int right[500], int bottom[500], int left[500]){
+
+    int leftFound; 
+    int rightFound; 
+    int topFound;
+    int bottomFound;
+
+    for (int i = 0; i < 500; i ++){
+        
+        leftFound = 0;
+        rightFound = 0;
+        topFound = 0;
+        bottomFound = 0;
+
+        for (int j = 0; j < 500; j ++){
+            if (leftFound && rightFound && topFound && bottomFound){
+                break;
+            }
+            if (main[i][j] == 0 && !leftFound){
+                left[i] = j;
+                leftFound = 1;
+            }
+            if (main[i][500-j-1] == 0 && !rightFound){
+                right[i] = j;
+                rightFound = 1;
+            }
+            if (main[j][i] == 0 && !topFound){
+                top[i] = j;
+                topFound = 1;
+            }
+            if (main[500-j-1][i] == 0 && !bottomFound){
+                bottom[i] = j;
+                bottomFound = 1;
+            }
+        }
+    }
+}
+
+// set data for the drawn image on the grid, only needs to be calculated once per round of strokes
+
+void setCompareTo(int compareTo[500][500], int mode){
+
+    // depending on the mode do different operations, but always correlation
+
+    if (mode > 0){
+
+        mainIslandsBlack = findIslands(compareTo, 0);  // 0 to get black islands
+    
+    }
+    
+    if (mode > 1){
+     
+        mainIslandsWhite = findIslands(compareTo, 1); // 1 to get white islands
+
+    }
+
+    // reset all arrays to 0
+
+    memset(rowPixels, 0, sizeof(rowPixels));
+    memset(colPixels, 0, sizeof(colPixels));
+    memset(colBottom, 0, sizeof(colBottom));
+    memset(colTop, 0, sizeof(colTop));
+    memset(rowLeft, 0, sizeof(rowLeft));
+    memset(rowRight, 0, sizeof(rowRight));
+
+    countColsRows(compareTo, rowPixels, colPixels);
+
+    countStartDirections(compareTo, colTop, rowRight, colBottom, rowLeft);
+
 }
 
 // main function that controls the algorithm behaviour
@@ -263,7 +261,7 @@ double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initF
 
     if (mode == 1){
         
-        int blacks = find_islands(matrix, 0);
+        int blacks = findIslands(matrix, 0);
 
         if (blacks != mainIslandsBlack){
 
@@ -271,76 +269,43 @@ double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initF
             // islands have lower scores than those that differ by 
             // one or two
 
-            return 0.4 - 0.01 * abs(blacks-mainIslandsBlack);
+            return 0.35 - 0.01 * abs(blacks - mainIslandsBlack);
         }
     }
 
     else if (mode == 2){
 
-        int blacks = find_islands(matrix, 0);
-        int whites = find_islands(matrix, 1);
+        int blacks = findIslands(matrix, 0);
+        int whites = findIslands(matrix, 1);
 
         // same as above but with both blacks and whites
 
         if (whites != mainIslandsWhite || blacks != mainIslandsBlack){
-            return 0.4 - 0.01 * (abs(blacks-mainIslandsBlack) 
-                                + abs(whites-mainIslandsWhite));
+            return 0.35 - 0.01 * (abs(blacks - mainIslandsBlack) 
+                                + abs(whites - mainIslandsWhite));
         }
     }
 
     // idea for the arrays and the correlation taken from 
     // https://stackoverflow.com/questions/22786288/ocr-and-character-similarity
 
-    int row_pixels2[500] = {0}; 
-    int col_pixels2[500] = {0}; 
-    int col_top2[500] = {0};    
-    int col_bottom2[500] = {0}; 
-    int row_left2[500] = {0};   
-    int row_right2[500] = {0};
+    int rowPixels2[500] = {0}; 
+    int colPixels2[500] = {0}; 
+    int colTop2[500] = {0};    
+    int colBottom2[500] = {0}; 
+    int rowLeft2[500] = {0};   
+    int rowRight2[500] = {0};
 
-    countColsRows(matrix, row_pixels2, col_pixels2);
+    countColsRows(matrix, rowPixels2, colPixels2);
         
-    int left_found; 
-    int right_found; 
-    int colT_found;
-    int colB_found;
+    countStartDirections(matrix, colTop2, rowRight2, colBottom2, rowLeft2);
 
-    for (int i = 0; i < 500; i ++){
-        
-        left_found = 0;
-        right_found = 0;
-        colT_found = 0;
-        colB_found = 0;
-
-        for (int j = 0; j < 500; j ++){
-            if (left_found && right_found && colT_found && colB_found){
-                break;
-            }
-            if (matrix[i][j] == 0 && !left_found){
-                row_left2[i] = j;
-                left_found = 1;
-            }
-            if (matrix[i][500-j-1] == 0 && !right_found){
-                row_right2[i] = j;
-                right_found = 1;
-            }
-            if (matrix[j][i] == 0 && !colT_found){
-                col_top2[i] = j;
-                colT_found = 1;
-            }
-            if (matrix[500-j-1][i] == 0 && !colB_found){
-                col_bottom2[i] = j;
-                colB_found = 1;
-            }
-        }
-    }
-
-    double a = correlationCoefficient(row_pixels, row_pixels2, 500);
-    double b = correlationCoefficient(col_pixels, col_pixels2, 500);
-    double c = correlationCoefficient(col_top, col_top2, 500);
-    double d = correlationCoefficient(col_bottom, col_bottom2, 500);
-    double e = correlationCoefficient(row_left, row_left2, 500);
-    double f = correlationCoefficient(row_right, row_right2, 500);
+    double a = correlationCoefficient(rowPixels, rowPixels2, 500);
+    double b = correlationCoefficient(colPixels, colPixels2, 500);
+    double c = correlationCoefficient(colTop, colTop2, 500);
+    double d = correlationCoefficient(colBottom, colBottom2, 500);
+    double e = correlationCoefficient(rowLeft, rowLeft2, 500);
+    double f = correlationCoefficient(rowRight, rowRight2, 500);
 
     return (a+b+c+d+e+f)/6;
 }

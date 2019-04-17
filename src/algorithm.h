@@ -4,8 +4,11 @@
 double compareAlgorithm(int compareTo[500][500], int matrix[500][500], int initFlag, int mode);
 void setCompareTo(int compareTo[500][500], int mode);
 
-int can_enter_cell(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col, int isWhite);
-void expand_search(int matrix[ROWS][COLS], int is_visited[ROWS][COLS], int cur_row, int cur_col, int isWhite);
-int find_islands(int matrix[ROWS][COLS], int isWhite);
+int canEnterCell(int matrix[ROWS][COLS], int isVisited[ROWS][COLS], int currentRow, int currentCol, int isWhite);
+void expandSearch(int matrix[ROWS][COLS], int isVisited[ROWS][COLS], int currentRow, int currentCol, int isWhite);
+int findIslands(int matrix[ROWS][COLS], int isWhite);
+
+void countColsRows(int main[500][500], int rows[500], int cols[500]);
+void countStartDirections(int main[500][500], int top[500], int right[500], int bottom[500], int left[500]);
 
 double correlationCoefficient(int X[500], int Y[500], int n);
