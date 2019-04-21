@@ -405,6 +405,13 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
                     images = charScore2texture(renderer, valueChars->elements, db->sourcePath, valueChars->count);
                     gridAdd(renderer, images, valueChars->count, startX, startY);
 
+                    // add message to indicate number of strokes
+
+                    char textMessage[24];
+                    sprintf(textMessage, "Number of strokes: %d", strokes);
+
+                    loadMessage(renderer, textMessage, font);
+
                     break;
                 }
             
@@ -496,6 +503,8 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
                             strokes = 0; // reset strokes to 0
 
                             clearGrid(pixels); // clear drawing grid
+
+                            loadMessage(renderer, "", font); // clear message area
 
                             // Update in case of new stroke by freeing previous elements first
 
