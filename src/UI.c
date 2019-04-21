@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include <stdlib.h>
 #include "database.h"
@@ -37,9 +38,22 @@ void initWindow(SDL_Window * window, SDL_Renderer ** renderer, int width, int he
 
 }
 
+// Initialise font given the source
+
+TTF_Font * initFont(char * font, int size){
+
+    if (TTF_Init() < 0) {
+        printf("Error: couldn't load font from %s\n");
+    }
+
+    TTF_Font * fontPtr = TTF_OpenFont(font, size);
+    return fontPtr;
+}
+
 // Free all elements created by the SDL library and quit the program
 
 void closeWindow(SDL_Window * window){
+    TTF_Quit(); // close font data
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
@@ -141,7 +155,7 @@ void drawCircle(int pixels[500][500], int x, int y, int radius){
             if (pow(x-i, 2) + pow(y-j, 2) <= pow(radius, 2)){
 
                 // checks to prevent segfaults when drawing outside
-                if (j >= 0 && j < 500 && i >= 0 && j < 500){ 
+                if (j >= 0 && j < 500 && i >= 0 && i < 500){ 
                     pixels[j][i] = 0;
                 }
             }
@@ -154,6 +168,23 @@ SDL_Texture * loadImage(SDL_Renderer * renderer, char * source){
     SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
     SDL_FreeSurface(loadedSurface);
     return texture;
+}
+
+void loadMessage(SDL_Renderer * renderer, char * text, TTF_Font * font){
+    
+    SDL_SetRenderDrawColor(renderer, 51, 102, 153, 255);
+    createPane(renderer, 480, 20, 400, 40);
+
+    SDL_Color White = {255, 255, 255};
+    SDL_Surface* surfaceMessage = TTF_RenderUTF8_Blended(font, text, White);
+    SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+
+    int texW = 0;
+    int texH = 0;
+    SDL_QueryTexture(Message, NULL, NULL, &texW, &texH);
+    SDL_Rect dstrect = {480, 30, texW, texH };
+
+    SDL_RenderCopy(renderer, Message, NULL, &dstrect);
 }
 
 // Copies images (passed in a pointer to an array of SDL_Textures) to a location
@@ -240,7 +271,7 @@ void clearGrid(int matrix[500][500]){
 
 // Main loop of the app
 
-void mainLoopWindow(Database * db, SDL_Renderer * renderer, int startX, int startY){
+void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int startX, int startY){
     
     // control flags
 
@@ -346,6 +377,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, int startX, int star
 
             mode = activeTwo + activeThree * 2; // calculate new mode for algorithm
             modifiedButtons = 0;
+
         }
 
         SDL_WaitEvent(&event);
@@ -409,6 +441,12 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, int startX, int star
                             char final[4];
                             strncpy(final, data, 3);
 
+                            // set up message to be printed on the screen
+
+                            char textMessage[25] = "Copied to clipboard: ";
+                            strcat(textMessage, final);
+
+                            loadMessage(renderer, textMessage, font);
                             SDL_SetClipboardText(final);
                         }
                     }
@@ -437,16 +475,19 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, int startX, int star
                             activeOne = 1;
                             activeTwo = 0;
                             activeThree = 0;
+                            loadMessage(renderer, "Changed mode to Quick", font);
                         }
                         else if (x == 1){
                             activeOne = 0;
                             activeTwo = 1;
                             activeThree = 0;
+                            loadMessage(renderer, "Changed mode to Normal", font);
                         }
                         else if (x == 2){
                             activeOne = 0;
                             activeTwo = 0;
                             activeThree = 1;
+                            loadMessage(renderer, "Changed mode to Exhaustive", font);
                         }
                         else if (x == 6){
 
@@ -577,7 +618,9 @@ void startApp(char sourcePath[]){
 
     initWindow(window, &renderer, width, height);
 
-    mainLoopWindow(db, renderer, 0, 60);
+    TTF_Font * font = initFont("../chineseBold.ttf", 20);
+
+    mainLoopWindow(db, renderer, font, 0, 60);
 
     closeWindow(window);
 
