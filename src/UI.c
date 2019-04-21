@@ -161,38 +161,28 @@ SDL_Texture * loadImage(SDL_Renderer * renderer, char * source){
 
 void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int startX, int startY){
     
-    if (length > 49){
+    if (length > 49){ // maximum number of individual cells
         length = 49;
     }
 
-    int x = length / 7;
-    int y = length % 7;
+    for (int i = 0; i < length; i++){
 
-    int count = 0;
-    int i;
+        int x = i % 7;
+        int y = i / 7;
 
-    for (i = 0; i < x; i++){
-        for (int j = 0; j < 7; j++){
-            SDL_Rect rectangular;
-            rectangular.x = startX + 540 + 7 + j*70;
-            rectangular.y = startY + 27 + i*70;
-            rectangular.w = 65;
-            rectangular.h = 65;
-            SDL_RenderCopy(renderer, images[count], NULL, &rectangular);
-            count++;
-        }
-    }
+        // background pane for blackish border around picture
 
-    if (y != 0){
-        for (int j = 0; j < y; j++){
-            SDL_Rect rectangular;
-            rectangular.x = startX + 540 + 7 + j*70;
-            rectangular.y = startY + 27 + i*70;
-            rectangular.w = 65;
-            rectangular.h = 65;
-            SDL_RenderCopy(renderer, images[count], NULL, &rectangular);
-            count++;
-        }
+        createPane(renderer, startX + 540 + 5 + x*70, startY + 25 + y*70, 69, 69);
+
+        // image inside rect
+        
+        SDL_Rect rectangular;
+        rectangular.x = startX + 540 + 7 + x*70;
+        rectangular.y = startY + 27 + y*70;
+        rectangular.w = 65;
+        rectangular.h = 65;
+        SDL_RenderCopy(renderer, images[i], NULL, &rectangular);
+
     }
 }
 
@@ -309,6 +299,12 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, int startX, int star
     SDL_SetRenderDrawColor(renderer, 255, 102, 100, 255);
     SDL_Rect * pane1 = createPane(renderer, startX + 20, startY + 20, 500, 500);
 
+    // simulate background for first and second pane
+
+    SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+    SDL_Rect * paneSub1 = createPane(renderer, startX + 18, startY + 18, 504, 504);
+    SDL_Rect * paneSub2 = createPane(renderer, startX + 38 + 500, startY + 18, 504, 504);
+
     // four top panes, one for each button
 
     SDL_Rect * pane2; // pane for images
@@ -329,6 +325,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, int startX, int star
 
         SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
         pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
+        SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255); // reset color back to blackish
         
         // add images to new pane
 
