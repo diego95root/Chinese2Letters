@@ -26,4 +26,4 @@ else()
 endif()
 
 add_executable(tests ${SOURCES} ${TESTS} ${UNITY} ${INCLUDES_SRC} ${INCLUDES_UNI})
-target_link_libraries(tests png m SDL2 SDL2main SDL2_image pthread)
+target_link_libraries(tests png m SDL2 SDL2main SDL2_ttf SDL2_image pthread)
