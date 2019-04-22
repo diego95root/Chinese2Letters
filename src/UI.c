@@ -452,6 +452,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, app
 
                             char message[7];
                             strncpy(message, valueChars->elements[y*7+x]->name, 6);
+                            message[6] = '\0';
 
                             // Convert string to a byte array
 
@@ -461,6 +462,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, app
 
                             char final[4];
                             strncpy(final, data, 3);
+                            final[3] = '\0';
 
                             // set up message to be printed on the screen
 

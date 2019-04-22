@@ -12,7 +12,7 @@ typedef struct appData {
     SDL_Rect * pane4;
     SDL_Rect * pane5;
     SDL_Rect * pane6; // top right clear button
-    SDL_Texture * buttonsTex[6]; // 
+    SDL_Texture * buttonsTex[7];
     cursorData cursors;
 } appData;
 
