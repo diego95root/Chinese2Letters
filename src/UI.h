@@ -1,5 +1,3 @@
-void startApp(char sourcePath[]);
-
 void initWindow(SDL_Window * window, SDL_Renderer ** renderer, int width, int height);
 TTF_Font * initFont(char * font, int size);
 void closeWindow(SDL_Window * window);

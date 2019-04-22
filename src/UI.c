@@ -614,24 +614,3 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
     SDL_FreeCursor(sdlMouseCursor);
     SDL_FreeCursor(initialCursor);
 }
-
-void startApp(char sourcePath[]){
-
-    SDL_Window   * window   = NULL;
-    SDL_Renderer * renderer = NULL;
-    
-    int width = 1060;
-    int height = 600; // 540 + 60 for above bar
-
-    Database * db = parserGetDB(sourcePath);
-
-    initWindow(window, &renderer, width, height);
-
-    TTF_Font * font = initFont("../chineseBold.ttf", 20);
-
-    mainLoopWindow(db, renderer, font, 0, 60);
-
-    closeWindow(window);
-
-    parserEnd(db);
-}
