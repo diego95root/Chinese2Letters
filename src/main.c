@@ -19,7 +19,11 @@ void startApp(char sourcePath[]){
 
     TTF_Font * font = initFont("../chineseBold.ttf", 20);
 
-    mainLoopWindow(db, renderer, font, 0, 60);
+    int startX = 0;
+    int startY = 60;
+
+    appData data = initScene(renderer, startX, startY);
+    mainLoopWindow(db, renderer, font, data, startX, startY);
 
     closeWindow(window);
 

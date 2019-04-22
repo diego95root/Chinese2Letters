@@ -246,6 +246,19 @@ SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList,
     return textureList;
 }
 
+void freeAppData(appData data){
+
+    free(data.pane1);
+    free(data.pane2);
+    free(data.pane3);
+    free(data.pane4);
+    free(data.pane5);
+    free(data.pane6);
+    
+    SDL_FreeCursor(data.cursors.hand);
+    SDL_FreeCursor(data.cursors.normal);
+}
+
 // Destory all data from images (stored in a pointer to an array of SDL_Textures) and
 // free all data in the charScoreList structure
 
@@ -271,7 +284,58 @@ void clearGrid(int matrix[500][500]){
 
 // Main loop of the app
 
-void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int startX, int startY){
+appData initScene(SDL_Renderer * renderer, int startX, int startY){
+    
+    // set background color for window
+
+    SDL_SetRenderDrawColor(renderer, 51, 102, 153, 255);
+    SDL_RenderClear(renderer);
+
+    // create panes data
+
+    appData data;
+    clearGrid(data.drawingGrid); // clear drawing grid
+    SDL_SetRenderDrawColor(renderer, 255, 102, 100, 255);
+    data.pane1 = createPane(renderer, startX + 20, startY + 20, 500, 500);
+    
+    SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
+
+    data.pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
+    
+    // simulate background for first and second pane
+
+    SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+    createPane(renderer, startX + 18, startY + 18, 504, 504); // pane 1 border
+    createPane(renderer, startX + 38 + 500, startY + 18, 504, 504); // pane 2 border
+
+    data.pane3 = createPane(renderer, 20, 20, 130, 40);
+    data.pane4 = createPane(renderer, 170, 20, 130, 40);
+    data.pane5 = createPane(renderer, 320, 20, 130, 40);
+    data.pane6 = createPane(renderer, 910, 20, 130, 40);
+
+    // set up different cursors
+
+    data.cursors.normal = SDL_GetCursor();
+    SDL_Surface * image = IMG_Load("../images/mouse.png");
+    data.cursors.hand = SDL_CreateColorCursor(image, 14, 8);
+    SDL_FreeSurface(image); // free image data 
+
+    // load all images in an array of sdl textures 
+
+    char imagesArray[][20] = {"../images/m1.png", "../images/m1b.png", 
+                              "../images/m2.png", "../images/m2b.png",
+                              "../images/m3.png", "../images/m3b.png",
+                              "../images/clear.png"
+                            };
+
+    for (int i = 0; i < 7; i++){
+        data.buttonsTex[i] = loadImage(renderer, imagesArray[i]);
+    }
+
+    return data;
+}
+
+void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, appData data, int startX, int startY){
     
     // control flags
 
@@ -288,74 +352,24 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
 
     SDL_Event event;
 
-    // set up different cursors
-
-    SDL_Cursor * initialCursor = SDL_GetCursor();
-    SDL_Surface * image = IMG_Load("../images/mouse.png");
-    SDL_Cursor * sdlMouseCursor = SDL_CreateColorCursor(image, 14, 8);
-
-    // create and set grid to white
-
-    int pixels[500][500];
-    
-    clearGrid(pixels); // set all to white
-
     // get all data for the grid
 
-    charScoreList * valueChars = parserInit(db, strokes, pixels, mode);
+    charScoreList * valueChars = parserInit(db, strokes, data.drawingGrid, mode);
     SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, db->sourcePath, valueChars->count);
     SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
-
-    // load all images in an array of sdl textures 
-
-    char imagesArray[][20] = {"../images/m1.png", "../images/m1b.png", 
-                              "../images/m2.png", "../images/m2b.png",
-                              "../images/m3.png", "../images/m3b.png",
-                              "../images/clear.png"
-                            };
-
-    SDL_Texture * loadedTextures[6];
-
-    for (int i = 0; i < 7; i++){
-        loadedTextures[i] = loadImage(renderer, imagesArray[i]);
-    }
-
-    // set background color for window
-
-    SDL_SetRenderDrawColor(renderer, 51, 102, 153, 255);
-    SDL_RenderClear(renderer);
-
-    // set first pane, where drawings will be done
-
-    SDL_SetRenderDrawColor(renderer, 255, 102, 100, 255);
-    SDL_Rect * pane1 = createPane(renderer, startX + 20, startY + 20, 500, 500);
-
-    // simulate background for first and second pane
-
-    SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
-    createPane(renderer, startX + 18, startY + 18, 504, 504); // pane 1 border
-    createPane(renderer, startX + 38 + 500, startY + 18, 504, 504); // pane 2 border
-
-    // four top panes, one for each button
-
-    SDL_Rect * pane2; // pane for images
-    SDL_Rect * pane3 = createPane(renderer, 20, 20, 130, 40);
-    SDL_Rect * pane4 = createPane(renderer, 170, 20, 130, 40);
-    SDL_Rect * pane5 = createPane(renderer, 320, 20, 130, 40);
-    SDL_Rect * pane6 = createPane(renderer, 910, 20, 130, 40);
 
     while (!quit){
 
         // update drawing pane on each iteration
 
-        SDL_UpdateTexture(texture, NULL, pixels, 500 * sizeof(int));
+        SDL_UpdateTexture(texture, NULL, data.drawingGrid, 500 * sizeof(int));
 
         // second pane, where images will be presented, needs rendering on every cycle 
         // due to the rectangle over images to simulate hover (if not rendered again it
         // stays there)
 
         SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
-        pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
+        data.pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
         SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255); // reset color back to blackish
         
         // add images to new pane
@@ -367,13 +381,13 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
 
             // load blue or black depending on active flag
 
-            SDL_RenderCopy(renderer,  loadedTextures[0 + activeOne], NULL, pane3);
-            SDL_RenderCopy(renderer, loadedTextures[2 + activeTwo], NULL, pane4);
-            SDL_RenderCopy(renderer, loadedTextures[4 + activeThree], NULL, pane5);
+            SDL_RenderCopy(renderer,  data.buttonsTex[0 + activeOne], NULL, data.pane3);
+            SDL_RenderCopy(renderer, data.buttonsTex[2 + activeTwo], NULL, data.pane4);
+            SDL_RenderCopy(renderer, data.buttonsTex[4 + activeThree], NULL, data.pane5);
 
             // always same button, but needs rendering again to remove black hover rect
 
-            SDL_RenderCopy(renderer, loadedTextures[6], NULL, pane6);
+            SDL_RenderCopy(renderer, data.buttonsTex[6], NULL, data.pane6);
 
             mode = activeTwo + activeThree * 2; // calculate new mode for algorithm
             modifiedButtons = 0;
@@ -401,7 +415,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
 
                     // get new elements
 
-                    valueChars = parserInit(db, strokes, pixels, mode);
+                    valueChars = parserInit(db, strokes, data.drawingGrid, mode);
                     images = charScore2texture(renderer, valueChars->elements, db->sourcePath, valueChars->count);
                     gridAdd(renderer, images, valueChars->count, startX, startY);
 
@@ -502,7 +516,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
                             
                             strokes = 0; // reset strokes to 0
 
-                            clearGrid(pixels); // clear drawing grid
+                            clearGrid(data.drawingGrid); // clear drawing grid
 
                             loadMessage(renderer, "", font); // clear message area
 
@@ -512,7 +526,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
 
                             // get new elements
 
-                            valueChars = parserInit(db, strokes, pixels, mode);
+                            valueChars = parserInit(db, strokes, data.drawingGrid, mode);
                             images = charScore2texture(renderer, valueChars->elements, 
                                                        db->sourcePath, valueChars->count);
                             gridAdd(renderer, images, valueChars->count, startX, startY);
@@ -536,7 +550,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
 
                     int radius = 18;
 
-                    drawCircle(pixels, mouseX, mouseY, radius);
+                    drawCircle(data.drawingGrid, mouseX, mouseY, radius);
                 
                 }
 
@@ -558,14 +572,14 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
                                                             65);
                         SDL_RenderFillRect(renderer, rectangular);
 
-                        SDL_SetCursor(sdlMouseCursor); // change cursor to hand
+                        SDL_SetCursor(data.cursors.hand); // change cursor to hand
                     }
 
                     else {
                         
                         // if on second pane but not on image then normal cursor
 
-                        SDL_SetCursor(initialCursor);
+                        SDL_SetCursor(data.cursors.normal);
                     
                     }
                 
@@ -575,7 +589,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
 
                     // if over button set cursor to normal
 
-                    SDL_SetCursor(sdlMouseCursor);
+                    SDL_SetCursor(data.cursors.hand);
                 
                 }
 
@@ -584,7 +598,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
                     // if not over anything normal cursor. Prevents cursor 
                     // from staying hand when it stops being over button
 
-                    SDL_SetCursor(initialCursor);
+                    SDL_SetCursor(data.cursors.normal);
                 
                 }
 
@@ -593,24 +607,16 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
 
         // copy drawing grid to texture and render everything
 
-        SDL_RenderCopy(renderer, texture, NULL, pane1);
+        SDL_RenderCopy(renderer, texture, NULL, data.pane1);
         SDL_RenderPresent(renderer);
     }
 
-    //writeMatrix(pixels, "data");
+    //writeMatrix(data.drawingGrid, "data");
 
     // free all panes and data before exiting
 
-    free(pane1);
-    free(pane2);
-    free(pane3);
-    free(pane4);
-    free(pane5);
-    free(pane6);
+    freeAppData(data);
 
     freeIterationData(valueChars, images);
 
-    SDL_FreeSurface(image);
-    SDL_FreeCursor(sdlMouseCursor);
-    SDL_FreeCursor(initialCursor);
 }
