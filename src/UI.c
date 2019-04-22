@@ -333,8 +333,8 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
     // simulate background for first and second pane
 
     SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
-    SDL_Rect * paneSub1 = createPane(renderer, startX + 18, startY + 18, 504, 504);
-    SDL_Rect * paneSub2 = createPane(renderer, startX + 38 + 500, startY + 18, 504, 504);
+    createPane(renderer, startX + 18, startY + 18, 504, 504); // pane 1 border
+    createPane(renderer, startX + 38 + 500, startY + 18, 504, 504); // pane 2 border
 
     // four top panes, one for each button
 
@@ -434,12 +434,12 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, int
                         
                         if ( y * 7 + x < valueChars->count){ // only copy if over image
 
-                            // Copy name to array of chars
+                            // Copy unicode repr which is in filename to string
 
                             char message[7];
                             strncpy(message, valueChars->elements[y*7+x]->name, 6);
 
-                            // Convert char array to a byte array
+                            // Convert string to a byte array
 
                             uint8_t * data = hex2byteArray(message);
 
