@@ -267,9 +267,9 @@ void freeIterationData(charScoreList * chars, SDL_Texture ** images){
         for (int i = 0; i < chars->count; i++){
             SDL_DestroyTexture(images[i]);
         }                
-        free(images);
         freeCharScoreList(chars);
     }
+    free(images); // free array even if 0 images
 }
 
 // Set drawing grid to be all white
