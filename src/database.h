@@ -1,4 +1,4 @@
-#define MAX_STROKES 35 // remove from here
+#define MAX_STROKES 35 // data obtained from python script
 
 typedef struct strokesGroup {
     int strokes;
