@@ -27,18 +27,17 @@ Cell can be entered if within range, not visited and is black
 
 int canEnterCell(int matrix[ROWS][COLS], int isVisited[ROWS][COLS], int currentRow, int currentCol, int isWhite){
     
-    if (matrix[currentRow][currentCol] == 0 && isWhite)
-        return 0;
-        
-    else if (matrix[currentRow][currentCol] != 0 && !isWhite)
-        return 0;
-
     if (currentRow < 0 || currentRow >= ROWS || currentCol < 0 || currentCol >= COLS 
         || isVisited[currentRow][currentCol]) {
-
         return 0;
     }
- 
+
+    if (isWhite && matrix[currentRow][currentCol] == 0) {
+        return 0;
+    }
+    else if (!isWhite && matrix[currentRow][currentCol] != 0) {
+        return 0;
+    }
     return 1;
 }
  
