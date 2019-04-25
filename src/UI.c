@@ -400,9 +400,10 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, app
         // add images to new pane
 
         gridAdd(renderer, images, valueChars->count, startX, startY);
-        
-        
-        if (modifiedButtons){ // only load buttons again if they have been modified
+                
+        // only load buttons again if they have been modified
+
+        if (modifiedButtons){ 
 
             // load blue or black depending on active flag
 
@@ -629,8 +630,6 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, app
         SDL_RenderCopy(renderer, texture, NULL, data.pane1);
         SDL_RenderPresent(renderer);
     }
-
-    //writeMatrix(data.drawingGrid, "data");
 
     // free all panes and data before exiting
 
