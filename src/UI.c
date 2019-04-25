@@ -335,6 +335,29 @@ appData initScene(SDL_Renderer * renderer, int startX, int startY){
     return data;
 }
 
+// Draw semi visible rectangle in black to simulate button click or hover, 
+// it depends on the intensity specified. Coordinate x determines the button,
+// the modified buttons variable is changed so that buttons are rendered again
+
+void hoverClickEffect(SDL_Renderer * renderer, int intensity, int x, _Bool * modifiedButtons){
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, intensity);
+                        
+    // subtract 10 if on clear button (it doesn't match otherwise)
+
+    SDL_Rect * rectangular = createPane(renderer, 
+                            (x+1)*20 + x*130 - ((x==6) * 10),
+                            20, 
+                            130, 
+                            40);
+
+    SDL_RenderFillRect(renderer, rectangular);
+    
+    // Flag to render buttons again but without hover
+
+    *modifiedButtons = 1;
+}
+
 void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, appData data, int startX, int startY){
     
     // control flags
@@ -355,8 +378,10 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, app
     // get all data for the grid
 
     charScoreList * valueChars = parserInit(db, strokes, data.drawingGrid, mode);
-    SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, db->sourcePath, valueChars->count);
-    SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 500, 500);
+    SDL_Texture ** images = charScore2texture(renderer, valueChars->elements, 
+                                                db->sourcePath, valueChars->count);
+    SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, 
+                                                SDL_TEXTUREACCESS_STATIC, 500, 500);
 
     while (!quit){
 
@@ -476,21 +501,9 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, app
 
                     else if (onButtonsPane(event)){
 
-                        // Draw semi visible rectangle in black to simulate button click
-
                         int x = event.motion.x / 150;
 
-                        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 140);
-                        
-                        // subtract 10 if on clear button (it doesn't match otherwise)
-
-                        SDL_Rect * rectangular = createPane(renderer, 
-                                                            (x+1)*20 + x*130 - ((x==6) * 10),
-                                                            20, 
-                                                            130, 
-                                                            40);
-
-                        SDL_RenderFillRect(renderer, rectangular);
+                        hoverClickEffect(renderer, 100, x, &modifiedButtons);
 
                         // detect button and set flags to know which images to render
 
@@ -536,8 +549,6 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, app
                         }
 
                         // Flag to render buttons again but with different images
-
-                        modifiedButtons = 1;
                     }
                 }
             
@@ -589,7 +600,13 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, app
 
                 else if (onButtonsPane(event)){
 
-                    // if over button set cursor to normal
+                    // obtain x to know which button to color
+
+                    int x = event.motion.x / 150;
+
+                    hoverClickEffect(renderer, 40, x, &modifiedButtons);
+
+                    // if over button set cursor to hand
 
                     SDL_SetCursor(data.cursors.hand);
                 

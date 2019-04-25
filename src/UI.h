@@ -38,6 +38,7 @@ SDL_Texture * createImage(SDL_Renderer * renderer, char * source, char sourcePat
 SDL_Texture * loadImage(SDL_Renderer * renderer, char * source);
 SDL_Texture ** charScore2texture(SDL_Renderer * renderer, charScore ** charList, char sourcePath[], int count);
 
+void hoverClickEffect(SDL_Renderer * renderer, int intensity, int x, _Bool * modifiedButtons);
 void loadMessage(SDL_Renderer * renderer, char * text, TTF_Font * font);
 
 uint8_t * hex2byteArray(char* string);
