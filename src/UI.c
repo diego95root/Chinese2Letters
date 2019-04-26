@@ -173,7 +173,7 @@ SDL_Texture * loadImage(SDL_Renderer * renderer, char * source){
 void loadMessage(SDL_Renderer * renderer, char * text, TTF_Font * font){
     
     SDL_SetRenderDrawColor(renderer, 51, 102, 153, 255);
-    createPane(renderer, 480, 20, 400, 40);
+    SDL_Rect * pane = createPane(renderer, 480, 20, 400, 40);
 
     SDL_Color White = {255, 255, 255};
     SDL_Surface* surfaceMessage = TTF_RenderUTF8_Blended(font, text, White);
@@ -185,6 +185,8 @@ void loadMessage(SDL_Renderer * renderer, char * text, TTF_Font * font){
     SDL_Rect dstrect = {480, 30, texW, texH };
 
     SDL_RenderCopy(renderer, Message, NULL, &dstrect);
+
+    free(pane);
 }
 
 // Copies images (passed in a pointer to an array of SDL_Textures) to a location
@@ -203,7 +205,7 @@ void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int sta
 
         // background pane for blackish border around picture
 
-        createPane(renderer, startX + 540 + 5 + x*70, startY + 25 + y*70, 69, 69);
+        SDL_Rect * pane = createPane(renderer, startX + 540 + 5 + x*70, startY + 25 + y*70, 69, 69);
 
         // image inside rect
         
@@ -213,7 +215,8 @@ void gridAdd(SDL_Renderer * renderer, SDL_Texture ** images, int length, int sta
         rectangular.w = 65;
         rectangular.h = 65;
         SDL_RenderCopy(renderer, images[i], NULL, &rectangular);
-
+        
+        free(pane);
     }
 }
 
@@ -254,6 +257,9 @@ void freeAppData(appData data){
     free(data.pane4);
     free(data.pane5);
     free(data.pane6);
+
+    free(data.paneBorder1);
+    free(data.paneBorder2);
     
     SDL_FreeCursor(data.cursors.hand);
     SDL_FreeCursor(data.cursors.normal);
@@ -263,12 +269,13 @@ void freeAppData(appData data){
 // free all data in the charScoreList structure
 
 void freeIterationData(charScoreList * chars, SDL_Texture ** images){
+
     if (chars->count != 0){
         for (int i = 0; i < chars->count; i++){
             SDL_DestroyTexture(images[i]);
         }                
-        freeCharScoreList(chars);
     }
+    freeCharScoreList(chars);
     free(images); // free array even if 0 images
 }
 
@@ -305,8 +312,9 @@ appData initScene(SDL_Renderer * renderer, int startX, int startY){
     // simulate background for first and second pane
 
     SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
-    createPane(renderer, startX + 18, startY + 18, 504, 504); // pane 1 border
-    createPane(renderer, startX + 38 + 500, startY + 18, 504, 504); // pane 2 border
+    
+    data.paneBorder1 = createPane(renderer, startX + 18, startY + 18, 504, 504); // pane 1 border
+    data.paneBorder2 = createPane(renderer, startX + 38 + 500, startY + 18, 504, 504); // pane 2 border
 
     data.pane3 = createPane(renderer, 20, 20, 130, 40);
     data.pane4 = createPane(renderer, 170, 20, 130, 40);
@@ -356,6 +364,8 @@ void hoverClickEffect(SDL_Renderer * renderer, int intensity, int x, _Bool * mod
     // Flag to render buttons again but without hover
 
     *modifiedButtons = 1;
+
+    free(rectangular);
 }
 
 void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, appData data, int startX, int startY){
@@ -394,6 +404,7 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, app
         // stays there)
 
         SDL_SetRenderDrawColor(renderer, 100, 102, 200, 255);
+        free(data.pane2); // free what had been allocated before
         data.pane2 = createPane(renderer, startX + 40 + 500, startY + 20, 500, 500);
         SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255); // reset color back to blackish
         

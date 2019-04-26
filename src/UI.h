@@ -12,6 +12,8 @@ typedef struct appData {
     SDL_Rect * pane4;
     SDL_Rect * pane5;
     SDL_Rect * pane6; // top right clear button
+    SDL_Rect * paneBorder1;
+    SDL_Rect * paneBorder2;
     SDL_Texture * buttonsTex[7];
     cursorData cursors;
 } appData;
