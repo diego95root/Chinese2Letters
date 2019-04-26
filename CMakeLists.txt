@@ -5,7 +5,7 @@ project(tests)
 
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_BUILD_TYPE "NoTest")
+set(CMAKE_BUILD_TYPE "Debug")
 
 add_definitions(-g -DUNITY_INCLUDE_DOUBLE -DUNITY_DOUBLE_PRECISION=1e-12f -D_GNU_SOURCE)
 
@@ -14,10 +14,10 @@ file(GLOB INCLUDES_SRC src/*.h)
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     include_directories(test)
-    include_directories(include)
+    include_directories(unity)
     file(GLOB TESTS "test/*.c")
-    file(GLOB UNITY "include/*.c")
-    file(GLOB INCLUDES_UNI include/*.h)
+    file(GLOB UNITY "unity/*.c")
+    file(GLOB INCLUDES_UNI unity/*.h)
     file(GLOB SOURCES "src/*.c")
 elseif(CMAKE_BUILD_TYPE STREQUAL NoTest)
     file(GLOB SOURCES "src/*.c")

@@ -17,7 +17,7 @@ void startApp(char sourcePath[]){
 
     initWindow(window, &renderer, width, height);
 
-    TTF_Font * font = initFont("../chineseBold.ttf", 20);
+    TTF_Font * font = initFont("../fonts/chineseBold.ttf", 20);
 
     int startX = 0;
     int startY = 60;
@@ -30,7 +30,7 @@ void startApp(char sourcePath[]){
     parserEnd(db);
 }
 
-int main(int argc, char* args[]){
+int maain(int argc, char* args[]){
 
     char sourcePath[] = "../chars3/";
 
