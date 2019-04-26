@@ -4,6 +4,9 @@
 #include "database.h"
 #include "parser.h"
 
+// test that the number of files with n strokes is the same as
+// the number obtained from the python script
+
 void test_CountOfFilesWithNStrokes(){
     Database * files = openDB("../chars3/");
     int arr[] = {1, 9, 23, 34, 37, 50, 34, 35, 29, 16, 12, 10, 7, 1, 2};
@@ -12,6 +15,9 @@ void test_CountOfFilesWithNStrokes(){
     }
     closeDB(files);
 }
+
+// test that the filenames are split correctly into unicode
+// representation and number of strokes
 
 void test_SplitFilename(){
     char names[][14] = {"e4ba86_02.png", "e4b889_03.png", "e4b88d_04.png",
@@ -32,7 +38,11 @@ void test_SplitFilename(){
     }
 }
 
-void test_filenamesByStrokeNumber(){ // on ../chars works better cause they're sorted, only name changes 
+// test that the filenames returned based on the stroke number
+// are the same as those obtained from the python script
+// on ../chars works better cause they're sorted, only name changes 
+
+void test_filenamesByStrokeNumber(){ 
     Database * files = openDB("../chars3/");
     char * filenames[][50] = {{"e4b880_01.png"},
     {"e4ba86_02.png", "e4ba8c_02.png", "e4baba_02.png", "e584bf_02.png", "e585a5_02.png", "e587a0_02.png", "e58a9b_02.png", "e58d81_02.png", "e58f88_02.png"},
@@ -114,6 +124,9 @@ void test_filenamesByStrokeNumber(){
 
 */
 
+// test that scores are sorted correctly for the ranking of 
+// the characters returned from the algorithm
+
 void test_ScoresSortedCorrectly(){
     Database * files = openDB("../chars3/");
     double arr[][15] = {
@@ -129,6 +142,9 @@ void test_ScoresSortedCorrectly(){
     }
     closeDB(files);
 }
+
+// test that the algorithm at the best option works efficiently
+// (returning the character in one of the 5 results)
 
 void test_comparisonReturnsCharacter(){
 
@@ -169,7 +185,7 @@ void test_comparisonReturnsCharacter(){
         
         for (int j = 0; j < results->count; j++){
             if (strcmp(results->elements[j]->name, arr[i]) == 0){
-                printf("|__[%s]: %d out of %d\n", arr[i], j, results->count);
+                //printf("|__[%s]: %d out of %d\n", arr[i], j, results->count);
                 TEST_ASSERT_INT_WITHIN(20, 0, j); // good result if within first 5 results
                 break;
             }
@@ -182,26 +198,92 @@ void test_comparisonReturnsCharacter(){
     parserEnd(db);
 }
 
+// test that the algorithm results are improved when the mode 
+// changes (mode 0 worse than 1 and worse than 2)
+
+void test_algorithmModesWork(){
+
+    Database * db = parserGetDB("../chars3/");
+
+    char * arr[] = {"e4bda0_07.png",  // `ni` character with a stroke that is not joint correctly (islands + 1)
+                    "e68891_07.png",  // `wo` written incorrectly, with bad strokes 
+                    "e69687_04.png",  
+                    "e69c9f_12.png",  
+                    "e794a8_05.png",
+                    "e5b0b1_12.png",  
+                    "e68898_09.png",  
+                    "e69c89_06.png",  
+                    "e7949f_05.png",  
+                    "e997ae_06.png"};
+    
+    size_t length = sizeof(arr) / sizeof(arr[0]);
+    
+    for (int i = 0; i < length; i++){
+
+        char wholename[40] = "../test/dataImages/data-";
+        strcat(wholename, arr[i]);
+
+        int matrix[500][500];
+        readMatrix(matrix, wholename);
+
+        char name[20]; // need to copy the constant string out from RO memory
+        strcpy(name, arr[i]);
+
+        char ** splitted = splitFilename(name); // obtain number of strokes for comparison
+        int strokes = atoi(splitted[1]);
+        free(splitted[0]);
+        free(splitted[1]);
+        free(splitted);
+
+        int positions[3]; 
+
+        charScoreList * results0 = parserInit(db, strokes, matrix, 0);
+        charScoreList * results1 = parserInit(db, strokes, matrix, 1);        
+        charScoreList * results2 = parserInit(db, strokes, matrix, 2);
+        
+        for (int j = 0; j < results0->count; j++){
+            if (strcmp(results0->elements[j]->name, arr[i]) == 0){
+                positions[0] = j;
+                break;
+            }
+        }
+
+        for (int j = 0; j < results1->count; j++){
+            if (strcmp(results1->elements[j]->name, arr[i]) == 0){
+                positions[1] = j;
+                break;
+            }
+        }
+
+        for (int j = 0; j < results2->count; j++){
+            if (strcmp(results2->elements[j]->name, arr[i]) == 0){
+                positions[2] = j;
+                break;
+            }
+        }
+
+        TEST_ASSERT(positions[0] >= positions[1]);
+        TEST_ASSERT(positions[1] >= positions[2]);
+
+        freeCharScoreList(results0);
+        freeCharScoreList(results1);
+        freeCharScoreList(results2);
+
+    }
+
+    parserEnd(db);
+}
+
+
 int main(){
     UNITY_BEGIN();
-
-    // Should I test splitFilename?
 
     RUN_TEST(test_CountOfFilesWithNStrokes);
     RUN_TEST(test_SplitFilename);
     RUN_TEST(test_filenamesByStrokeNumber);
     RUN_TEST(test_ScoresSortedCorrectly);
     RUN_TEST(test_comparisonReturnsCharacter);
-
-    /*
-    // TEST FOR READ AND WRITE
-
-    int pixels[500][500];
-    char file[] = "e69687_04.png";
-
-    readMatrix(file, pixels, 500, 500);
-    writeMatrix(pixels, 500, 500);
-    */
+    RUN_TEST(test_algorithmModesWork);
 
     return UNITY_END();
 }
