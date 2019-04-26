@@ -265,7 +265,7 @@ double compareAlgorithm(int compareTo[ROWS][COLS], int matrix[ROWS][COLS], int i
             // islands have lower scores than those that differ by 
             // one or two
 
-            return 0.35 - 0.01 * abs(blacks - mainIslandsBlack);
+            return 0.30 - 0.01 * abs(blacks - mainIslandsBlack);
         }
     }
 
@@ -277,7 +277,7 @@ double compareAlgorithm(int compareTo[ROWS][COLS], int matrix[ROWS][COLS], int i
         // same as above but with both blacks and whites
 
         if (whites != mainIslandsWhite || blacks != mainIslandsBlack){
-            return 0.35 - 0.01 * (abs(blacks - mainIslandsBlack) 
+            return 0.30 - 0.01 * (abs(blacks - mainIslandsBlack) 
                                 + abs(whites - mainIslandsWhite));
         }
     }
