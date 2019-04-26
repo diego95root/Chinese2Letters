@@ -1,0 +1,9 @@
+set size ratio 1
+unset colorbox
+unset xtics
+unset ytics
+set yrange[500:0]
+set xrange[0:500]
+set palette gray
+set term wxt title 'Visualization of image matrix'
+plot "data" matrix w image noti
