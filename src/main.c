@@ -30,7 +30,7 @@ void startApp(char sourcePath[]){
     parserEnd(db);
 }
 
-int maain(int argc, char* args[]){
+int main(int argc, char* args[]){
 
     char sourcePath[] = "../chars3/";
 
