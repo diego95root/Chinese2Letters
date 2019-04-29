@@ -501,6 +501,10 @@ void mainLoopWindow(Database * db, SDL_Renderer * renderer, TTF_Font * font, app
                             strncpy(final, data, 3);
                             final[3] = '\0';
 
+                            // free allocated data from hex2byteArray
+
+                            free(data);
+
                             // set up message to be printed on the screen
 
                             char textMessage[25] = "Copied to clipboard: ";
