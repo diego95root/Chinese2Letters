@@ -55,8 +55,12 @@ char ** splitFilename(char * name){
                     
         splitted[i] = malloc(sizeof(char) * strlen(ptr)+1);
 
-        char zero = ptr[0]; 
-        if (i == 1 && atoi(&zero) == 0){ // check if second number has leading zero
+        char zero[2]; // array to store first digit to check if it is 0
+        
+        zero[0] = ptr[0]; 
+        zero[1] = '\0'; // atoi needs trailing null byte
+
+        if (i == 1 && atoi(zero) == 0){ // check if second number has leading zero
             strcpy(splitted[i], &ptr[1]);
         }
         else {
